@@ -13,6 +13,7 @@ export default function AccountPayInformation() {
     }, []);
 
     const loadData = useCallback(async () => {
+        
         const { data } = await axios.get("/payment/account");
         setPaymentList(data);
     }, []);
