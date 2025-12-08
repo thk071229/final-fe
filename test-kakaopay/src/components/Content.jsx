@@ -26,6 +26,7 @@ export default function Content() {
 
                     <Route path="/kakaopay/pay/info" element={<AccountPayInformation />}></Route>
                     <Route path="/kakaopay/pay/detail" element={<AccountPayDetail />}></Route>
+                    <Route path="/kakaopay/pay/detail/:paymentNo" element={<AccountPayDetail/>}></Route>
                 </Routes>
 
             </div>

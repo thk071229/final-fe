@@ -6,6 +6,7 @@ import { FaQuestionCircle } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import Jumbotron from "../templates/Jumbotron";
 
 export default function AccountPayDetail() {
     const { paymentNo } = useParams();
@@ -88,7 +89,8 @@ export default function AccountPayDetail() {
     //return
     return (<>
 
-        <h1>결제 상세</h1>
+        <Jumbotron subject="결제 상세 정보 조회" detail={`${paymentNo}`}번 거래 내역 조회></Jumbotron>
+
         <hr />
 
         <h2>결제 정보</h2>
