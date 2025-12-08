@@ -96,7 +96,6 @@ export default function KakaoPay() {
 
         const { data } = await axios.post("/kakaopay/buy", convertList);
 
-        console.log("data:", data);
         navigate(data.next_redirect_pc_url);
     }, [checkedGiftcardList]);
 

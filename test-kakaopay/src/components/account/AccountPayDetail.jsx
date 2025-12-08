@@ -61,7 +61,7 @@ export default function AccountPayDetail() {
 
         await axios.delete(`/payment/${paymentNo}`);
 
-        toast.success("결제 취소");
+        toast.success("결제 전체 취소");
         loadData();
     }, []);
 
@@ -82,7 +82,7 @@ export default function AccountPayDetail() {
 
         await axios.delete(`/payment/detail/${paymentDetail.paymentDetailNo}`);
 
-        toast.success("결제 취소");
+        toast.success("결제 부분 취소");
         loadData();
     }, []);
 
