@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react"
 import { FaArrowRight } from "react-icons/fa6";
 import { Link } from "react-router-dom";
 import Jumbotron from "../templates/Jumbotron";
-
+import "../kakaopay/KakaoPay.css";
 
 export default function AccountPayInformation() {
     const [paymentList, setPaymentList] = useState([]);
@@ -47,10 +47,10 @@ export default function AccountPayInformation() {
 
         <div className="row mt-4">
             <div className="col-6">
-                <Link to="/kakaopay/buy">카카오페이 결제하기</Link>
+                <Link to="/kakaopay/buy" className="none-decortion">카카오페이 결제하기</Link>
             </div>
             <div className="col-6">
-                <Link to="/">홈</Link>
+                <Link to="/" className="none-decortion">홈</Link>
             </div>
         </div>
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Jumbotron from "../templates/Jumbotron";
+import "./KakaoPay.css";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -100,7 +101,7 @@ export default function KakaoPay() {
 
     }, [checkedGiftcardList]);
 
-     const numberWithComma = useCallback((x) => {
+    const numberWithComma = useCallback((x) => {
         if (x === null || x === undefined || x === '') {
             return '';
         }
@@ -121,10 +122,10 @@ export default function KakaoPay() {
 
         <div className="row mt-4">
             <div className="col-6">
-                <Link to="/kakaopay/pay/info">결제 내역 보기</Link>
+                <Link to="/kakaopay/pay/info" className="none-decortion">결제 내역 보기</Link>
             </div>
             <div className="col-6">
-                <Link to="/">홈</Link>
+                <Link to="/" className="none-decortion">홈</Link>
             </div>
         </div>
 
@@ -135,8 +136,8 @@ export default function KakaoPay() {
                         <thead>
                             <tr>
                                 <th>
-                                    <input type="checkbox" checked={checkAll}
-                                        // onChange={e=>setCheckAll(e.target.checked)}
+                                    <input type="checkbox"
+                                        checked={checkAll}
                                         onChange={changeCheckAll} />
                                 </th>
                                 <th>이름</th>
@@ -148,14 +149,20 @@ export default function KakaoPay() {
                         <tbody>
                             {giftcardList.map(giftcard => (
                                 <tr key={giftcard.giftcardNo}>
-                                    <td>
+                                    <td className="checkbox-cell">
                                         <input type="checkbox" value={giftcard.giftcardNo}
                                             checked={giftcard.check} onChange={changeGiftcardCheck} />
                                     </td>
-                                    <td>{giftcard.giftcardName}</td>
-                                    <td>{numberWithComma(giftcard.giftcardPrice)}</td>
-                                    <td>{numberWithComma(giftcard.giftcardPoint)}</td>
-                                    <td>
+                                    <td className="checkbox-cell">
+                                        {giftcard.giftcardName}
+                                    </td>
+                                    <td className="checkbox-cell">
+                                        {numberWithComma(giftcard.giftcardPrice)}원
+                                    </td>
+                                    <td className="checkbox-cell">
+                                        {numberWithComma(giftcard.giftcardPoint)}포인트
+                                    </td>
+                                    <td className="checkbox-cell">
                                         <input type="number" inputMode="numeric"
                                             className="form-control" min={1}
                                             value={numberWithComma(giftcard.qty)}
@@ -175,7 +182,7 @@ export default function KakaoPay() {
                 {numberWithComma(checkedGiftcardList.length)}개의 상품권
             </div>
             <div className="col text-end fs-2">
-                금액:{Number.isNaN(checkedTotal)? "0" : numberWithComma(checkedTotal)}원
+                금액:{Number.isNaN(checkedTotal) ? "0" : numberWithComma(checkedTotal)}원
             </div>
         </div>
 

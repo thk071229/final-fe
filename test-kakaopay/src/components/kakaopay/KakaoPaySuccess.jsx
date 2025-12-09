@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import Jumbotron from "../templates/Jumbotron";
+import "./KakaoPay.css";
 
 
 export default function KakaoPaySuccess() {
@@ -11,7 +12,7 @@ export default function KakaoPaySuccess() {
 
         <div className="row mt-4">
             <div className="col">
-                <Link to="/">홈</Link>
+                <Link to="/" className="none-decortion">홈</Link>
             </div>
         </div>
     </>)
