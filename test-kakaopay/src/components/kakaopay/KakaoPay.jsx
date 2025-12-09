@@ -80,7 +80,8 @@ export default function KakaoPay() {
     const changeGiftcardQty2 = useCallback((e, obj) => {
         const convert = giftcardList.map(giftcard => {
             if (giftcard.giftcardNo === obj.giftcardNo) {
-                return { ...giftcard, qty: parseInt(e.target.value) };
+                const number = parseInt(e.target.value);
+                return { ...giftcard, qty: Number.isNaN(number) ? 0 : number };
             }
             return giftcard;
         });
@@ -182,7 +183,7 @@ export default function KakaoPay() {
                 {numberWithComma(checkedGiftcardList.length)}개의 상품권
             </div>
             <div className="col text-end fs-2">
-                금액:{Number.isNaN(checkedTotal) ? "0" : numberWithComma(checkedTotal)}원
+                금액:{numberWithComma(checkedTotal)}원
             </div>
         </div>
 
