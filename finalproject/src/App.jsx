@@ -25,7 +25,7 @@ function App() {
                 <Menu/>
                 <div className="container-fluid my-5 pt-5">
                     <Content/>
-                    <hr/>
+                    <hr />
                     <Footer/>
                 </div>
             {/* </Provider> */}
