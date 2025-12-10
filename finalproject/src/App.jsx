@@ -8,6 +8,7 @@ import Content from "./components/Content"
 import "jotai-devtools/styles.css"; // 디자인
 import { DevTools } from "jotai-devtools"; // 도구
 import { Map, MapMarker } from "react-kakao-maps-sdk";
+import { Bounce, ToastContainer } from "react-toastify";
 
 function App() {
   return (
@@ -29,6 +30,21 @@ function App() {
                 </div>
             {/* </Provider> */}
         </BrowserRouter>
+
+              {/* 토스트 메세지 컨테이너 */}
+      <ToastContainer
+        position="bottom-right"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        transition={Bounce}
+      />
     </>
   )
 }

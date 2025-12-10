@@ -1,4 +1,4 @@
-import "./KakaoPay.css";
+// import "./KakaoPay.css";
 
 export default function KakaoPayLayout({ title, children }) {
   return (
@@ -8,7 +8,6 @@ export default function KakaoPayLayout({ title, children }) {
 
           <section className="kakao-panel">
             <div className="kakao-panel__content">
-              
 
               <div className="kakao-logo">
                 <img src="/images/pay-logo.svg" alt="logo" />
@@ -24,15 +23,5 @@ export default function KakaoPayLayout({ title, children }) {
         </div>
       </div>
     </div>
-  );
-
-  return (
-    <>
-
-      <section className="kakao-panel">
-        <div className="kakao-panel__content">
-        </div>
-      </section>
-    </>
   );
 }

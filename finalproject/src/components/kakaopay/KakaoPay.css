@@ -110,7 +110,6 @@ div {
   pointer-events: none;
 }
 
-
 /* 내용은 가상요소 위에 나오도록 */
 .kakao-bg>* {
   position: relative;
