@@ -20,6 +20,7 @@ export default function Content() {
                 <Routes>
                     {/* 메인 페이지 */}
                     {/* <Route path="/" element={<Home/>}></Route> */}
+
                     <Route path="kakaotest" element={<KakaoMapTest />}></Route>
 
                     {/* 카카오페이 관련 */}
