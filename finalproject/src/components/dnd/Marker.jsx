@@ -11,7 +11,7 @@ const style = {
 }
 
 export const Marker = memo(function Marker({
-    id, location, duration, distance, content, moveMarker, findMarker, onRemove, changeStrValue
+    id, duration, distance, markerData, moveMarker, findMarker, onRemove, changeStrValue
 }) {
     const originalIndex = findMarker(id).index;
     const [{ isDragging }, drag] = useDrag(
@@ -48,7 +48,7 @@ export const Marker = memo(function Marker({
         <div ref={(node) => drag(drop(node))} style={{ ...style, opacity }}>
             <div className="row">
                 <div className="col">
-                    <span>{location.no}번 마커 ({id.substring(0, 6)})</span> 
+                    <span>uuid : ({id.substring(0, 8)})</span> 
                 </div>
                 <div className="col text-end">
                     <FaXmark className="text-danger ms-2 text-end" onClick={onRemove} />
@@ -58,13 +58,19 @@ export const Marker = memo(function Marker({
                 <div className="col-12">
                     <div className="row schedule-item">
                         <div className="col-3">
-                            <div><span className="badge bg-success fs-5">1</span></div>
-                            <div><span>시간 {duration.RECOMMEND}</span></div>
-                            <div><span>거리 {distance.RECOMMEND}</span></div>
+                            <div><span className="badge bg-success fs-5">{markerData.no}</span></div>
+                            {/* <div><span>이전시간 {duration?.prev?.RECOMMEND}</span></div> */}
+                            {duration?.next?.RECOMMEND > 0 && (
+                                <div><span>{duration?.next?.RECOMMEND}초</span></div>
+                            )}
+                            {/* <div><span>이전거리 {distance?.prev?.RECOMMEND}</span></div> */}
+                            {duration?.next?.RECOMMEND > 0 && (
+                                <div><span>{distance?.next?.RECOMMEND}미터</span></div>
+                            )}
                         </div>
                         <div className="col-9">
-                            <div>장소 {location.name}</div>
-                            <textarea name="content" placeholder={content.content} onChange={changeStrValue}></textarea>
+                            <div>{markerData.name}</div>
+                            <textarea name="content" placeholder={markerData.content} onChange={changeStrValue}></textarea>
                         </div>
                     </div>
                 </div>
