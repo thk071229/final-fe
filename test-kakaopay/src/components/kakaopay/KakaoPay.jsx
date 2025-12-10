@@ -154,6 +154,7 @@ export default function KakaoPay() {
                                         <input type="checkbox" value={giftcard.giftcardNo}
                                             checked={giftcard.check} onChange={changeGiftcardCheck} />
                                     </td>
+
                                     <td className="checkbox-cell">
                                         {giftcard.giftcardName}
                                     </td>
@@ -183,7 +184,7 @@ export default function KakaoPay() {
                 {numberWithComma(checkedGiftcardList.length)}개의 상품권
             </div>
             <div className="col text-end fs-2">
-                금액:{numberWithComma(checkedTotal)}원
+                금액:{Number.isNaN(checkedTotal)? "0" : numberWithComma(checkedTotal)}원
             </div>
         </div>
 
