@@ -1,0 +1,184 @@
+.checkbox-cell {
+  vertical-align: middle;
+}
+
+.none-decortion {
+  text-decoration: none;
+}
+
+.kakao-wrap {
+  width: 100vw;
+  height: 100vh;
+  background: #ffeb00;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.kakao-box {
+  width: 420px;
+  background: white;
+  padding: 40px 20px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.kakao-title {
+  margin-bottom: 20px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.kakao-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #73767A;
+}
+
+.kakao-button {
+  margin-top: 30px;
+  padding: 12px 16px;
+  background: #ffeb00;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+html {
+  /* box-shadow: 0 0 1px 0 red; */
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  /* box-shadow: 0 0 1px 0 red; */
+  margin: 0;
+  padding: 0;
+}
+
+div {
+  /* box-shadow: 0 0 1px 0 red; */
+  margin: 0;
+  padding: 0;
+}
+
+.child-fullscreen {
+  all: unset;
+  /* 부모 스타일 박살내기 */
+  position: fixed;
+  /* 부모 레이아웃에서 완전 탈출 */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* 화면 전체 덮기 */
+  background: #ffeb00;
+  /* 원하는 배경 */
+  display: block;
+  /* 필요하면 레이아웃 직접 선언 */
+  z-index: 0;
+}
+
+.kakao-bg {
+  position: relative;
+  background-color: #ffeb00;
+  /* 기본 배경 */
+  overflow: hidden;
+  /* 가상요소가 삐져나오는 것 방지 */
+}
+
+
+.kakao-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  /* 모든 요소 위로 */
+
+  background-image: url("/images/pay-logo.svg");
+  background-repeat: round;
+  background-size: 490px 179px;
+  /* 단위 꼭 붙이기 */
+
+  opacity: 0.05;
+  pointer-events: none;
+}
+
+/* 내용은 가상요소 위에 나오도록 */
+.kakao-bg>* {
+  position: relative;
+}
+
+
+.kakao-logo {
+  text-align: left;
+  position: absolute;
+  transform: translate(19px, -45px);
+  font-size: 1.3rem;
+}
+
+hr {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+
+
+
+/* asdasdasdasdasd */
+
+
+:root {
+  --header-height: 58px;
+  /* 상단 헤더 높이 (원하면 조정) */
+  --panel-raise: 0px;
+  /* 위로 당겨 보이는 양 (px) */
+  --panel-radius: 40px;
+  /* --panel-padding: 18px; */
+}
+
+
+/* 카카오 스타일 패널 */
+.kakao-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: var(--header-height);
+  /* 헤더 바로 아래에서 시작 */
+  bottom: 0;
+  /* 바닥에 딱 붙음 */
+  transform: translateY(calc(-1 * var(--panel-raise)));
+  /* 위로 살짝 당김 */
+  display: flex;
+  justify-content: center;
+  /* 가로 중앙(원하면 좌정렬로 변경) */
+  z-index: 30;
+  /* 헤더보다 위에 보이게 하려면 더 크게 */
+  pointer-events: none;
+  /* 패널 바깥 클릭 전달하려면 none 사용 (내부는 다시 활성화) */
+}
+
+/* 실제 흰색 박스 (내용 영역) */
+.kakao-panel__content {
+  pointer-events: auto;
+  /* 클릭 허용 */
+  width: min(420px, 98%);
+  /* 최대 너비 제한 */
+  height: 100%;
+  /* top ~ bottom 전체 차지 */
+  background: white;
+  border-radius: var(--panel-radius) var(--panel-radius) 0 0;
+  /* 위쪽 둥글게, 아래쪽은 모서리 없음(바닥에 붙음) */
+  box-shadow: 0 10px 30px rgba(18, 18, 18, 0.12);
+  padding: var(--panel-padding);
+  overflow: auto;
+  /* 내부 스크롤 */
+  /* iPhone 홈바 같은 안전영역 고려 */
+  padding-bottom: calc(var(--panel-padding) + env(safe-area-inset-bottom));
+
+  z-index: 30;
+}
