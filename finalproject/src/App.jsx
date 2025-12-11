@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter } from "react-router-dom"
+import { BrowserRouter, Link } from "react-router-dom"
 import Menu from "./components/Menu"
 import Footer from "./components/Footer"
 import Content from "./components/Content"
@@ -25,6 +25,7 @@ function App() {
                 <Menu/>
                 <div className="container-fluid my-5 pt-5">
                     <Content/>
+                    
                     <hr />
                     <Footer/>
                 </div>
