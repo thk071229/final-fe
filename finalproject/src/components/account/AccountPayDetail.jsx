@@ -5,9 +5,9 @@ import "./AccountPay.css";
 import { FaQuestionCircle } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { toast } from "react-toastify";
-import Swal from "sweetalert2";
 import Jumbotron from "../templates/Jumbotron";
 import { numberWithComma } from "../../utils/format";
+import { confirm } from "../../utils/confirm";
 
 export default function AccountPayDetail() {
     const { paymentNo } = useParams();
@@ -30,16 +30,14 @@ export default function AccountPayDetail() {
 
     const cancelAll = useCallback(async () => {
 
-        const choice = await Swal.fire({
+        const choice = await confirm({
             title: "모든 아이템을 환불하시겠습니까?",
             text: "환불은 돌이킬 수 없습니다.",
             icon: "error",
-            showCancelButton: true,
-            confirmButtonColor: "#0984e3",
-            cancelButtonColor: "#d63031",
-            confirmButtonText: "전체 환불",
-            cancelButtonText: "취소",
-            allowOutsideClick: false,
+            confirmColor: "#0984e3",
+            cancelColor: "#d63031",
+            confirmText: "전체 환불",
+            cancelText: "취소",
         });
 
         if (choice.isConfirmed === false)
@@ -52,19 +50,19 @@ export default function AccountPayDetail() {
     }, []);
 
     const cancelUnit = useCallback(async (paymentDetail) => {
-        const choice = await Swal.fire({
+
+         const choice = await confirm({
             title: "해당 아이템을 환불하시겠습니까?",
             text: "환불은 돌이킬 수 없습니다.",
             icon: "error",
-            showCancelButton: true,
-            confirmButtonColor: "#0984e3",
-            cancelButtonColor: "#d63031",
-            confirmButtonText: "아이템 환불",
-            cancelButtonText: "취소",
-            allowOutsideClick: false,
+            confirmColor: "#0984e3",
+            cancelColor: "#d63031",
+            confirmText: "아이템 환불",
+            cancelText: "취소",
         });
-        //console.log(choice);
-        if (choice.isConfirmed === false) return;
+
+        if (choice.isConfirmed === false) 
+            return;
 
         await axios.delete(`/payment/detail/${paymentDetail.paymentDetailNo}`);
 
