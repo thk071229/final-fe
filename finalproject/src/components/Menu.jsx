@@ -277,17 +277,14 @@ export default function Menu() {
                   </DemoContainer>
                 </LocalizationProvider>
 
-
-
-
               </div>
               <h4 className="mt-4">어떤 스타일의 일정인가요?</h4>
               {categories.map((category, index) => {
                 const categoryTegs = tags.filter(t => t.tagCategory === category)
                   .slice(0, 5); //카테고리당 5개만
                 return (
-                  <>
-                    <div className=" mt-2" key={category}>
+                  <div key={category}>
+                    <div className=" mt-2" >
                       <label className="form-label"
                         name="tagCategory" >{category}</label>
                     </div>
@@ -303,7 +300,7 @@ export default function Menu() {
                       ))}
                     </div>
                     {index !== categories.length - 1 && <hr className="my-3 w-90 mx-auto" />}
-                  </>);
+                  </div>);
               })}
             </div>
 
