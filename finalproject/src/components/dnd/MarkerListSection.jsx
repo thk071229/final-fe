@@ -2,7 +2,7 @@ import { useCallback } from "react";
 // import update from "immutability-helper";
 import { Marker } from "./Marker";
 
-export default function MarkerListSection({ markerIds, distance, duration, markerData, setDays, setMarkerData, selectedDay, selectedType, removeMarker }) {
+export default function MarkerListSection({ markerIds, routes, markerData, setDays, setMarkerData, selectedDay, selectedType, removeMarker }) {
     // id로 마커 찾기
     const findMarker = useCallback((id) => {
         const index = markerIds.indexOf(id);
@@ -72,13 +72,12 @@ export default function MarkerListSection({ markerIds, distance, duration, marke
         const nextKey = nextId ? `${id}-${nextId}` : null;
 
         const durationForMarker = {
-            prev: prevKey ? duration[prevKey] : null,
-            next: nextKey ? duration[nextKey] : null,
+            prev: prevKey ? routes.find(route => route.routeKey === prevKey)?.duration : null,
+            next: nextKey ? routes.find(route => route.routeKey === nextKey)?.duration : null,
         };
-
         const distanceForMarker = {
-            prev: prevKey ? distance[prevKey] : null,
-            next: nextKey ? distance[nextKey] : null,
+            prev: prevKey ? routes.find(route => route.routeKey === prevKey)?.distance : null,
+            next: nextKey ? routes.find(route => route.routeKey === nextKey)?.distance : null,
         };
         return ( <Marker
             key={id}
