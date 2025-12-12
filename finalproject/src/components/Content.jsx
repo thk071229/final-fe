@@ -53,7 +53,7 @@ export default function Content() {
                     <Route path="/account/findPw" element={<AccountFindPw/>}></Route>
                     <Route path="/account/joinFinish" element={<AccountJoinFinish/>}></Route>
 
-                    <Route path="kakaotest" element={<KakaoMapTest />}></Route>
+                    
 
                     {/* 카카오페이 관련 */}
                     <Route path="/kakaopay/buy" element={<KakaoPay />}></Route>
@@ -76,6 +76,8 @@ export default function Content() {
                         <Route path="data" element={<ScheduleData />} />
                         <Route path="shearch" element={<ScheduleSearch />} />
                     </Route>
+
+                    <Route path="kakaotest" element={<KakaoMapTest />}></Route>
 
 
                     <Route path="/schedule" element={<Schedule />} />
