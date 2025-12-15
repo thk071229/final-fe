@@ -1,0 +1,132 @@
+/* commons.css
+  Minty 테마(#78C2AD) 공통 스타일 및 유틸리티 모음 
+*/
+
+:root {
+    --minty-primary: #78C2AD; /* Minty 메인 컬러 */
+    --minty-hover: #63a593;   /* 호버 시 조금 더 진한 색 */
+    --minty-light: rgba(120, 194, 173, 0.1); /* 연한 배경색 (체크박스 등) */
+    --minty-focus: rgba(120, 194, 173, 0.25); /* 포커스 링 색상 */
+}
+
+/* =========================================
+   [1] Bootstrap Override (기본 스타일 덮어쓰기)
+   ========================================= */
+
+/* 폼 검증 아이콘(체크, 느낌표) 제거 */
+/* 눈 아이콘(비밀번호 보기)과 겹치는 문제 해결 */
+.form-control.is-valid,
+.form-control.is-invalid {
+    background-image: none !important;
+}
+
+/* 인풋창 포커스 시 Minty 색상 링 적용 */
+.form-control:focus {
+    border-color: var(--minty-primary);
+    box-shadow: 0 0 0 0.25rem var(--minty-focus);
+}
+
+/* 체크박스/라디오 버튼 체크 시 Minty 색상 */
+.form-check-input:checked {
+    background-color: var(--minty-primary);
+    border-color: var(--minty-primary);
+}
+
+/* =========================================
+   [2] Custom Button Styles
+   ========================================= */
+
+/* Minty 솔리드 버튼 (가입하기, 확인 등) */
+.btn-minty {
+    background-color: var(--minty-primary);
+    border-color: var(--minty-primary);
+    color: white;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.btn-minty:hover {
+    background-color: var(--minty-hover);
+    border-color: var(--minty-hover);
+    color: white;
+    transform: translateY(-2px); /* 살짝 떠오르는 효과 */
+}
+
+.btn-minty:disabled {
+    background-color: #ccc;
+    border-color: #ccc;
+    color: white;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Minty 아웃라인 버튼 (성별 선택 등) */
+.btn-outline-minty {
+    color: #6c757d;
+    border-color: #dee2e6;
+    background-color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-minty:hover {
+    color: var(--minty-primary);
+    border-color: var(--minty-primary);
+    background-color: white;
+}
+
+.btn-outline-minty.active {
+    color: white;
+    background-color: var(--minty-primary);
+    border-color: var(--minty-primary);
+    font-weight: bold;
+}
+
+/* 텍스트 줄바꿈 방지 및 최소 너비 (인증요청 버튼용) */
+.text-nowrap-btn {
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+/* =========================================
+   [3] Layout & Utility Classes
+   ========================================= */
+
+/* 카드 중앙 정렬 및 너비 고정 (반응형: 최대 640px) */
+.card-fixed-width {
+    width: 100%;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 커서 포인터 (클릭 가능한 요소) */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* 비밀번호 입력창용 오른쪽 패딩 (눈 아이콘 공간 확보) */
+.input-with-icon {
+    padding-right: 45px !important;
+}
+
+/* Minty 텍스트 컬러 */
+.text-minty {
+    color: var(--minty-primary) !important;
+}
+
+/* 링크 호버 효과 */
+.link-minty {
+    color: #888;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link-minty:hover {
+    color: var(--minty-primary);
+    text-decoration: underline;
+}
+
+/* 배경색 유틸리티 */
+.bg-minty {
+    background-color: var(--minty-primary) !important;
+}

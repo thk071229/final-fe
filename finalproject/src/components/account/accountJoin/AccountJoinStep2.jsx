@@ -1,12 +1,15 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaAsterisk, FaEye, FaEyeSlash, FaUser } from "react-icons/fa6";
+import { FaEye, FaEyeSlash } from "react-icons/fa6"; // Asterisk, User 아이콘 제거
 import axios from "axios";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from "dayjs";
 import 'dayjs/locale/ko';
+
+// Minty 테마 색상 정의
+const MINT_COLOR = "#78C2AD";
 
 const AccountJoinStep2 = ({ verifiedPhone }) => {
     // 이동도구
@@ -158,10 +161,20 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
                 alert("가입 중 오류가 발생했습니다.");
             }
         }
-    }, [account, accountValid]);
+    }, [account, accountValid, navigate]);
+
+    // 버튼 스타일 생성 함수 (성별 선택용)
+    const getGenderBtnStyle = (targetGender) => {
+        const isActive = account.accountGender === targetGender;
+        return {
+            backgroundColor: isActive ? MINT_COLOR : 'white',
+            color: isActive ? 'white' : '#6c757d',
+            borderColor: isActive ? MINT_COLOR : '#6c757d',
+            fontWeight: isActive ? 'bold' : 'normal'
+        };
+    };
 
     return (
-        // [수정] Step1과 동일한 Container 및 Card 레이아웃 적용
         <div className="container mt-5">
             <div className="row">
                 <div className="col">
@@ -171,19 +184,24 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 아이디 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
-                                    아이디 <FaAsterisk className="text-danger" size={10}/>
+                                <label className="col-sm-3 col-form-label fw-bold">
+                                    아이디 <span className="text-danger">*</span>
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="d-flex gap-2">
                                         <input type="text" className={`form-control ${accountClass.accountId}`}
                                             name="accountId" value={account.accountId} onChange={changeStrValue} />
-                                        <button type="button" className="btn btn-dark text-nowrap" onClick={checkAccountId}>
+                                        <button 
+                                            type="button" 
+                                            className="btn text-white text-nowrap" 
+                                            style={{ backgroundColor: MINT_COLOR, borderColor: MINT_COLOR }}
+                                            onClick={checkAccountId}
+                                        >
                                             아이디확인
                                         </button>
                                     </div>
                                     {accountClass.accountId === "is-valid" && (
-                                        <div className="valid-feedback d-block">사용 가능한 아이디입니다!</div>
+                                        <div className="valid-feedback d-block" style={{color: MINT_COLOR, fontWeight: 'bold'}}>사용 가능한 아이디입니다!</div>
                                     )}
                                     {accountClass.accountId === "is-invalid" && (
                                         <div className="invalid-feedback d-block">{accountIdFeedback}</div>
@@ -193,15 +211,15 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 비밀번호 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
-                                    비밀번호 <FaAsterisk className="text-danger" size={10}/>
+                                <label className="col-sm-3 col-form-label fw-bold">
+                                    비밀번호 <span className="text-danger">*</span>
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="position-relative">
                                         <input type={showPassword ? "text" : "password"}
                                             className={`form-control ${accountClass.accountPw}`}
                                             name="accountPw" value={account.accountPw} onChange={changeStrValue}
-                                            onBlur={checkAccountPw} style={{paddingRight:"45px", backgroundImage:"none"}} />
+                                            onBlur={checkAccountPw} style={{paddingRight:"45px"}} />
                                         <span onClick={() => setShowPassword(!showPassword)}
                                             className="position-absolute top-50 end-0 translate-middle-y me-3 text-secondary"
                                             style={{cursor: "pointer"}}>
@@ -209,7 +227,7 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
                                         </span>
                                     </div>
                                     {accountClass.accountPw === "is-valid" && (
-                                        <div className="valid-feedback d-block">사용 가능한 비밀번호 형식입니다</div>
+                                        <div className="valid-feedback d-block" style={{color: MINT_COLOR, fontWeight: 'bold'}}>사용 가능한 비밀번호 형식입니다</div>
                                     )}
                                     {accountClass.accountPw === "is-invalid" && (
                                         <div className="invalid-feedback d-block">8~16자, 대문자/소문자/숫자/특수문자(!@#$) 필수</div>
@@ -219,15 +237,15 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 비밀번호 확인 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
-                                    비밀번호 확인 <FaAsterisk className="text-danger" size={10}/>
+                                <label className="col-sm-3 col-form-label fw-bold">
+                                    비밀번호 확인 <span className="text-danger">*</span>
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="position-relative">
                                         <input type={showPasswordCheck ? "text" : "password"} 
                                             className={`form-control ${accountClass.accountPw2}`}
                                             name="accountPw2" value={account.accountPw2} onChange={changeStrValue}
-                                            onBlur={checkAccountPw} style={{paddingRight:"45px", backgroundImage:"none"}} />
+                                            onBlur={checkAccountPw} style={{paddingRight:"45px"}} />
                                         <span onClick={() => setShowPasswordCheck(!showPasswordCheck)}
                                             className="position-absolute top-50 end-0 translate-middle-y me-3 text-secondary"
                                             style={{cursor: "pointer"}}>
@@ -235,7 +253,7 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
                                         </span>
                                     </div>
                                     {accountClass.accountPw2 === "is-valid" && (
-                                        <div className="valid-feedback d-block">비밀번호가 일치합니다</div>
+                                        <div className="valid-feedback d-block" style={{color: MINT_COLOR, fontWeight: 'bold'}}>비밀번호가 일치합니다</div>
                                     )}
                                     {accountClass.accountPw2 === "is-invalid" && (
                                         <div className="invalid-feedback d-block">비밀번호가 일치하지 않습니다</div>
@@ -245,19 +263,24 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 닉네임 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
-                                    닉네임 <FaAsterisk className="text-danger" size={10}/>
+                                <label className="col-sm-3 col-form-label fw-bold">
+                                    닉네임 <span className="text-danger">*</span>
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="d-flex gap-2">
                                         <input type="text" className={`form-control ${accountClass.accountNickname}`}
                                             name="accountNickname" value={account.accountNickname} onChange={changeStrValue} />
-                                        <button type="button" className="btn btn-dark text-nowrap" onClick={checkAccountNickname}>
+                                        <button 
+                                            type="button" 
+                                            className="btn text-white text-nowrap" 
+                                            style={{ backgroundColor: MINT_COLOR, borderColor: MINT_COLOR }}
+                                            onClick={checkAccountNickname}
+                                        >
                                             닉네임확인
                                         </button>
                                     </div>
                                     {accountClass.accountNickname === "is-valid" && (
-                                        <div className="valid-feedback d-block">사용 가능한 닉네임입니다!</div>
+                                        <div className="valid-feedback d-block" style={{color: MINT_COLOR, fontWeight: 'bold'}}>사용 가능한 닉네임입니다!</div>
                                     )}
                                     {accountClass.accountNickname === "is-invalid" && (
                                         <div className="invalid-feedback d-block">{accountNicknameFeedback}</div>
@@ -267,7 +290,7 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 이메일 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
+                                <label className="col-sm-3 col-form-label fw-bold">
                                     이메일
                                 </label>
                                 <div className="col-sm-9">
@@ -283,16 +306,19 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 성별 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
+                                <label className="col-sm-3 col-form-label fw-bold">
                                     성별
                                 </label>
                                 <div className="col-sm-9">
                                     <div className="btn-group w-100" role="group">
-                                        <button type="button" className={`btn ${account.accountGender === '남' ? 'btn-outline-success fw-bold' : 'btn-outline-secondary'}`}
+                                        <button type="button" className="btn"
+                                            style={getGenderBtnStyle('남')}
                                             onClick={() => setAccount({ ...account, accountGender: '남' })}>남</button>
-                                        <button type="button" className={`btn ${account.accountGender === '여' ? 'btn-outline-success fw-bold' : 'btn-outline-secondary'}`}
+                                        <button type="button" className="btn"
+                                            style={getGenderBtnStyle('여')}
                                             onClick={() => setAccount({ ...account, accountGender: '여' })}>여</button>
-                                        <button type="button" className={`btn ${account.accountGender === "" ? 'btn-outline-success fw-bold' : 'btn-outline-secondary'}`}
+                                        <button type="button" className="btn"
+                                            style={getGenderBtnStyle("")}
                                             onClick={() => setAccount({ ...account, accountGender: "" })}>선택안함</button>
                                     </div>
                                 </div>
@@ -300,7 +326,7 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
                             {/* 생년월일 */}
                             <div className="row mt-4">
-                                <label className="col-sm-3 col-form-label">
+                                <label className="col-sm-3 col-form-label fw-bold">
                                     생년월일
                                 </label>
                                 <div className="col-sm-9">
@@ -317,9 +343,13 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
                             {/* 가입버튼 */}
                             <div className="row mt-5">
                                 <div className="col">
-                                    <button type="button" className="btn btn-success w-100 py-3 fw-bold"
+                                    <button type="button" className="btn w-100 py-3 fw-bold text-white"
+                                        style={{ 
+                                            backgroundColor: accountValid ? MINT_COLOR : '#ccc', 
+                                            borderColor: accountValid ? MINT_COLOR : '#ccc',
+                                            transition: '0.3s'
+                                        }}
                                         disabled={!accountValid} onClick={sendData}>
-                                        <FaUser className="me-2" />
                                         <span>{accountValid ? "회원 가입하기" : "필수 항목을 모두 작성해주세요"}</span>
                                     </button>
                                 </div>

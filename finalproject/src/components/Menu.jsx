@@ -3,13 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { accessTokenState, adminState, clearLoginState, loginCompleteState, loginIdState, loginLevelState, loginState } from "../utils/jotai";
 import { useCallback, useEffect, useRef, useState } from "react";
 import axios from "axios";
-// import TermsModal from "./account/accountJoin/TermsModal";
 import { CiCalendar } from "react-icons/ci";
-// import Modal from "@mui/material/Modal";
-// import Modal from "./account/accountJoin/TermsModal";
-import Modal from 'react-modal';
 import dayjs from "dayjs";
 import TermsModal from "./account/accountJoin/TermsModal";
+import { Modal } from "bootstrap";
 
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { DemoContainer, DemoItem } from '@mui/x-date-pickers/internals/demo';
@@ -315,7 +312,6 @@ export default function Menu() {
         </div>
       </div>
 
-      <TermsModal />
     </>
   )
 }
