@@ -6,17 +6,26 @@ import Jumbotron from "../templates/Jumbotron";
 import "../kakaopay/KakaoPay.css";
 import "./AccountPay.css";
 import { numberWithComma } from "../../utils/format";
+import { useAtom, useAtomValue } from "jotai";
+import { accessTokenState, loginCompleteState } from "../../utils/jotai";
 
 export default function AccountPayInformation() {
+
+    //jotai state
+    // const [accessToken, setAccessToken] = useAtom(accessTokenState);
     const [paymentList, setPaymentList] = useState([]);
+    const loginComplete = useAtomValue(loginCompleteState);
 
     useEffect(() => {
-        loadData();
-    }, []);
+        // 토큰이 있을 때만 데이터 로드 (선택 사항)
+        if (loginComplete === true) {
+            loadData();
+        }
+    }, [loginComplete]); // 토큰이 로드되면 실행
 
     const loadData = useCallback(async () => {
 
-        const { data } = await axios.get("/payment/account");
+        const { data } = await axios.get("/payment/account")
         setPaymentList(data);
     }, []);
 
