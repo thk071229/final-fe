@@ -7,7 +7,7 @@ import { numberWithComma } from "../../utils/format";
 
 export default function KakaoPay() {
 
-    const [giftcardList, setGiftcardList] = useState([]);
+    const [shopList, setShopList] = useState([]);
     const [checkAll, setCheckAll] = useState(false);
 
     useEffect(() => {
@@ -16,92 +16,92 @@ export default function KakaoPay() {
 
     const changeCheckAll = useCallback(e => {
         setCheckAll(e.target.checked);
-        setGiftcardList(prev =>
+        setShopList(prev =>
             prev.map(
-                giftcard => ({
-                    ...giftcard,
+                shop => ({
+                    ...shop,
                     check: e.target.checked,
                 })
             )
         );
     }, []);
 
-    const checkedGiftcardList = useMemo(() => {
-        return giftcardList.filter(giftcard => giftcard.check === true);
-    }, [giftcardList]);
+    const checkedShopList = useMemo(() => {
+        return shopList.filter(shop => shop.check === true);
+    }, [shopList]);
 
     const checkedTotal = useMemo(() => {
-        return checkedGiftcardList.reduce(
-            (total, giftcard) => total + (giftcard.giftcardPrice * giftcard.qty),
+        return checkedShopList.reduce(
+            (total, shop) => total + (shop.shopPrice * shop.qty),
             0
         );
-    }, [checkedGiftcardList]);
+    }, [checkedShopList]);
 
     const loadData = useCallback(async () => {
-        const { data } = await axios.get("/giftcard/");
+        const { data } = await axios.get("/shop/");
 
         const convert = data.map(g => ({
             ...g,
             check: false,
             qty: 1
         }));
-        setGiftcardList(convert);
+        setShopList(convert);
     }, []);
 
-    const changeGiftcardCheck = useCallback(e => {
+    const changeShopCheck = useCallback(e => {
         const { value, checked } = e.target;
 
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === parseInt(value)) {
-                return { ...giftcard, check: checked };
+        const convert = shopList.map(shop => {
+            if (shop.shopNo === parseInt(value)) {
+                return { ...shop, check: checked };
             }
-            return giftcard;
+            return shop;
         });
 
-        const count = convert.filter(giftcard => giftcard.check === true).length;
+        const count = convert.filter(shop => shop.check === true).length;
 
-        setGiftcardList(convert);
+        setShopList(convert);
         setCheckAll(convert.length === count);
-    }, [giftcardList]);
+    }, [shopList]);
 
-    const changeGiftcardQty = useCallback(e => {
-        const giftcardNo = e.target.dataset.pk;
+    const changeShopQty = useCallback(e => {
+        const shopNo = e.target.dataset.pk;
         const value = e.target.value;
 
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === parseInt(giftcardNo)) {
-                return { ...giftcard, qty: parseInt(value) };
+        const convert = shopList.map(shop => {
+            if (shop.shopNo === parseInt(shopNo)) {
+                return { ...shop, qty: parseInt(value) };
             }
-            return giftcard;
+            return shop;
         });
 
-        setGiftcardList(convert);
-    }, [giftcardList]);
+        setShopList(convert);
+    }, [shopList]);
 
-    const changeGiftcardQty2 = useCallback((e, obj) => {
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === obj.giftcardNo) {
+    const changeShopQty2 = useCallback((e, obj) => {
+        const convert = shopList.map(shop => {
+            if (shop.shopNo === obj.shopNo) {
                 const number = parseInt(e.target.value);
-                return { ...giftcard, qty: Number.isNaN(number) ? 0 : number };
+                return { ...shop, qty: Number.isNaN(number) ? 0 : number };
             }
-            return giftcard;
+            return shop;
         });
-        setGiftcardList(convert);
-    }, [giftcardList]);
+        setShopList(convert);
+    }, [shopList]);
 
     const navigate = useNavigate();
     const purchase = useCallback(async () => {
 
-        const convertList = checkedGiftcardList.map(giftcard => ({
-            no: giftcard.giftcardNo,
-            qty: giftcard.qty
+        const convertList = checkedShopList.map(shop => ({
+            no: shop.shopNo,
+            qty: shop.qty
         }));
 
         const { data } = await axios.post("/kakaopay/buy", convertList);
 
         navigate(data.next_redirect_pc_url);
 
-    }, [checkedGiftcardList]);
+    }, [checkedShopList]);
 
     return (<>
 
@@ -143,32 +143,32 @@ export default function KakaoPay() {
                                     </th>
                                     <th>이름</th>
                                     <th>금액</th>
-                                    <th>포인트</th>
+                                    <th>증가량</th>
                                     <th width="100">수량</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {giftcardList.map((giftcard) => (
-                                    <tr key={giftcard.giftcardNo}>
+                                {shopList.map((shop) => (
+                                    <tr key={shop.shopNo}>
                                         <td className="checkbox-cell">
-                                            <input type="checkbox" value={giftcard.giftcardNo}
-                                                checked={giftcard.check} onChange={changeGiftcardCheck} />
+                                            <input type="checkbox" value={shop.shopNo}
+                                                checked={shop.check} onChange={changeShopCheck} />
                                         </td>
                                         <td className="checkbox-cell">
-                                            {giftcard.giftcardName}
+                                            {shop.shopName}
                                         </td>
                                         <td className="checkbox-cell">
-                                            {numberWithComma(giftcard.giftcardPrice)}원
+                                            {numberWithComma(shop.shopPrice)}원
                                         </td>
                                         <td className="checkbox-cell">
-                                            {numberWithComma(giftcard.giftcardPoint)}포인트
+                                            {numberWithComma(shop.shopValue)}회
                                         </td>
                                         <td className="checkbox-cell">
                                             <input type="number" inputMode="numeric"
                                                 className="form-control" min={1}
-                                                value={numberWithComma(giftcard.qty)}
-                                                disabled={giftcard.check === false}
-                                                onChange={e => changeGiftcardQty2(e, giftcard)} />
+                                                value={numberWithComma(shop.qty)}
+                                                disabled={shop.check === false}
+                                                onChange={e => changeShopQty2(e, shop)} />
                                         </td>
                                     </tr>
                                 ))}
@@ -185,7 +185,7 @@ export default function KakaoPay() {
         >
             <div className="row mt-4">
                 <div className="col fs-2">
-                    {numberWithComma(checkedGiftcardList.length)}개의 상품권
+                    {numberWithComma(checkedShopList.length)}개의 상품권
                 </div>
                 <div className="col text-end fs-2">
                     금액:{numberWithComma(checkedTotal)}원
@@ -195,7 +195,7 @@ export default function KakaoPay() {
             <div className="row mt-4">
                 <div className="col text-end">
                     <button className="btn btn-lg btn-outline-success" onClick={purchase}
-                        disabled={checkedGiftcardList.length === 0}>구매</button>
+                        disabled={checkedShopList.length === 0}>구매</button>
                 </div>
             </div>
         </div>
