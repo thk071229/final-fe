@@ -1,12 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Jumbotron from "../templates/Jumbotron";
 import "./KakaoPay.css";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { numberWithComma } from "../../utils/format";
 
 export default function KakaoPay() {
 
+    /* =======================
+       화면 크기 감지
+    ======================= */
+    const [width, setWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const isMobile = width < 768;
+
+    /* =======================
+       상태
+    ======================= */
     const [shopList, setShopList] = useState([]);
     const [checkAll, setCheckAll] = useState(false);
 
@@ -14,132 +29,112 @@ export default function KakaoPay() {
         loadData();
     }, []);
 
-    const changeCheckAll = useCallback(e => {
-        setCheckAll(e.target.checked);
-        setShopList(prev =>
-            prev.map(
-                shop => ({
-                    ...shop,
-                    check: e.target.checked,
-                })
-            )
+    const loadData = useCallback(async () => {
+        const { data } = await axios.get("/shop/");
+        setShopList(
+            data.map(item => ({
+                ...item,
+                check: false,
+                qty: 1
+            }))
         );
     }, []);
 
-    const checkedShopList = useMemo(() => {
-        return shopList.filter(shop => shop.check === true);
-    }, [shopList]);
-
-    const checkedTotal = useMemo(() => {
-        return checkedShopList.reduce(
-            (total, shop) => total + (shop.shopPrice * shop.qty),
-            0
+    /* =======================
+       체크 로직
+    ======================= */
+    const changeCheckAll = useCallback(e => {
+        const checked = e.target.checked;
+        setCheckAll(checked);
+        setShopList(prev =>
+            prev.map(shop => ({ ...shop, check: checked }))
         );
-    }, [checkedShopList]);
-
-    const loadData = useCallback(async () => {
-        const { data } = await axios.get("/shop/");
-
-        const convert = data.map(g => ({
-            ...g,
-            check: false,
-            qty: 1
-        }));
-        setShopList(convert);
     }, []);
 
     const changeShopCheck = useCallback(e => {
         const { value, checked } = e.target;
+        const next = shopList.map(shop =>
+            shop.shopNo === Number(value)
+                ? { ...shop, check: checked }
+                : shop
+        );
 
-        const convert = shopList.map(shop => {
-            if (shop.shopNo === parseInt(value)) {
-                return { ...shop, check: checked };
-            }
-            return shop;
-        });
-
-        const count = convert.filter(shop => shop.check === true).length;
-
-        setShopList(convert);
-        setCheckAll(convert.length === count);
+        setShopList(next);
+        setCheckAll(next.every(shop => shop.check));
     }, [shopList]);
 
-    const changeShopQty = useCallback(e => {
-        const shopNo = e.target.dataset.pk;
-        const value = e.target.value;
+    const changeShopQty = useCallback((e, shop) => {
+        const qty = parseInt(e.target.value);
+        setShopList(prev =>
+            prev.map(s =>
+                s.shopNo === shop.shopNo
+                    ? { ...s, qty: Number.isNaN(qty) ? 0 : qty }
+                    : s
+            )
+        );
+    }, []);
 
-        const convert = shopList.map(shop => {
-            if (shop.shopNo === parseInt(shopNo)) {
-                return { ...shop, qty: parseInt(value) };
-            }
-            return shop;
-        });
+    /* =======================
+       계산
+    ======================= */
+    const checkedShopList = useMemo(
+        () => shopList.filter(shop => shop.check),
+        [shopList]
+    );
 
-        setShopList(convert);
-    }, [shopList]);
+    const checkedTotal = useMemo(
+        () =>
+            checkedShopList.reduce(
+                (sum, shop) => sum + shop.shopPrice * shop.qty,
+                0
+            ),
+        [checkedShopList]
+    );
 
-    const changeShopQty2 = useCallback((e, obj) => {
-        const convert = shopList.map(shop => {
-            if (shop.shopNo === obj.shopNo) {
-                const number = parseInt(e.target.value);
-                return { ...shop, qty: Number.isNaN(number) ? 0 : number };
-            }
-            return shop;
-        });
-        setShopList(convert);
-    }, [shopList]);
-
+    /* =======================
+       결제
+    ======================= */
     const navigate = useNavigate();
-    const purchase = useCallback(async () => {
 
-        const convertList = checkedShopList.map(shop => ({
+    const purchase = useCallback(async () => {
+        const payload = checkedShopList.map(shop => ({
             no: shop.shopNo,
             qty: shop.qty
         }));
 
-        const { data } = await axios.post("/kakaopay/buy", convertList);
-
+        const { data } = await axios.post("/kakaopay/buy", payload);
         navigate(data.next_redirect_pc_url);
+    }, [checkedShopList, navigate]);
 
-    }, [checkedShopList]);
-
-    return (<>
-
-        <div
-            className="fade-jumbotron"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <Jumbotron subject="카카오페이 결제" detail="무엇을 살지 정해야 함" />
-        </div>
-
-        <div
-            className="fade-link"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <div className="row my-4">
-                <div className="col-6 text-center">
-                    <Link to="/kakaopay/pay/info" className="none-decortion">결제 내역 보기</Link>
-                </div>
-                <div className="col-6 text-center">
-                    <Link to="/" className="none-decortion">홈</Link>
+    /* =======================
+       렌더
+    ======================= */
+    return (
+        <>
+            <div className="row mt-4">
+                <div className="col">
+                    <h3 className="text-center">일정 최대 개수 증가를 구매하세요</h3>
+                    <p className="text-center text-desc">
+                        일정 최대 개수를 증가시켜서 더욱 쾌적하게 즐기세요.
+                    </p>
                 </div>
             </div>
-        </div>
 
-        <div className="row mt-4">
-            <div className="col">
-                <div className="text-nowrap table-responsive">
-                    <div
-                        className="fade-item"
-                        style={{ animationDelay: `${0.03}s` }}
-                    >
-                        <table className="table table-striped">
+            <div className="row mt-4">
+                <div className="col">
+                    {isMobile ? (
+                        /* =======================
+                           모바일: 테이블
+                        ======================= */
+                        <table className="table">
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox"
+                                        <input
+                                            type="checkbox"
                                             checked={checkAll}
-                                            onChange={changeCheckAll} />
+                                            onChange={changeCheckAll}
+                                        />
                                     </th>
                                     <th>이름</th>
                                     <th>금액</th>
@@ -148,56 +143,113 @@ export default function KakaoPay() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {shopList.map((shop) => (
-                                    <tr key={shop.shopNo}>
+                                {shopList.map((shop, index) => (
+                                    <tr key={shop.shopNo} className={`bg-card-${index % 3}`}>
                                         <td className="checkbox-cell">
-                                            <input type="checkbox" value={shop.shopNo}
-                                                checked={shop.check} onChange={changeShopCheck} />
+                                            <input
+                                                type="checkbox"
+                                                value={shop.shopNo}
+                                                checked={shop.check}
+                                                onChange={changeShopCheck}
+                                            />
                                         </td>
+                                        <td className="checkbox-cell">{shop.shopName}</td>
+                                        <td className="checkbox-cell">{numberWithComma(shop.shopPrice)}원</td>
+                                        <td className="checkbox-cell">{numberWithComma(shop.shopValue)}회</td>
                                         <td className="checkbox-cell">
-                                            {shop.shopName}
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            {numberWithComma(shop.shopPrice)}원
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            {numberWithComma(shop.shopValue)}회
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            <input type="number" inputMode="numeric"
-                                                className="form-control" min={1}
-                                                value={numberWithComma(shop.qty)}
-                                                disabled={shop.check === false}
-                                                onChange={e => changeShopQty2(e, shop)} />
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                min={1}
+                                                value={shop.qty}
+                                                disabled={!shop.check}
+                                                onChange={e => changeShopQty(e, shop)}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    ) : (
+                        /* =======================
+                           데스크톱: 카드
+                        ======================= */
+                        <div className="row justify-content-center mx-5 g-2">
+                            <div className="col-12 text-center mb-2">
+                                <label className="d-inline-flex align-items-center gap-1 fw-semibold">
+                                    <input
+                                        type="checkbox"
+                                        checked={checkAll}
+                                        onChange={changeCheckAll}
+                                    />
+                                    모두 구매
+                                </label>
+                            </div>
 
-        <div
-            className="fade-label"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <div className="row mt-4">
-                <div className="col fs-2">
-                    {numberWithComma(checkedShopList.length)}개의 상품권
-                </div>
-                <div className="col text-end fs-2">
-                    금액:{numberWithComma(checkedTotal)}원
+                            {shopList.map((shop, index) => (
+                                <div
+                                    key={shop.shopNo}
+                                    className="col-12 col-sm-6 col-md-4 col-lg-3"
+                                >
+                                    <div className={`shadow rounded-4 p-4 h-100 bg-card-${index % 3}`}>
+                                        <p className="text-center fw-semibold">
+                                            <input
+                                                type="checkbox"
+                                                value={shop.shopNo}
+                                                checked={shop.check}
+                                                onChange={changeShopCheck}
+                                                className="me-2"
+                                            />
+                                            {numberWithComma(shop.shopValue)}회 증가
+                                        </p>
+
+                                        <p className="text-center">
+                                            {shop.shopDesc}
+                                        </p>
+
+                                        <p className="text-center">
+                                            {numberWithComma(shop.shopPrice)}원
+                                        </p>
+
+                                        <div className="d-flex justify-content-center">
+                                            <input
+                                                type="number"
+                                                className="form-control text-center"
+                                                style={{ width: "60px" }}
+                                                min={1}
+                                                value={shop.qty}
+                                                disabled={!shop.check}
+                                                onChange={e => changeShopQty(e, shop)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="row mt-4">
-                <div className="col text-end">
-                    <button className="btn btn-lg btn-outline-success" onClick={purchase}
-                        disabled={checkedShopList.length === 0}>구매</button>
+                <h5 className="col text-start">
+                    {checkedShopList.length}개의 상품권
+                </h5>
+                <h5 className="col text-end">
+                    금액: {numberWithComma(checkedTotal)}원
+                </h5>
+            </div>
+
+            <div className="row mt-4">
+                <div className="col text-center">
+                    <button
+                        className="btn btn-lg btn-outline-success"
+                        onClick={purchase}
+                        disabled={checkedShopList.length === 0}
+                    >
+                        구매
+                    </button>
                 </div>
             </div>
-        </div>
-    </>)
+        </>
+    );
 }

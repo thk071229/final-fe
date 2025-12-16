@@ -96,7 +96,7 @@ div {
   inset: 0;
   z-index: 0;
   /* 모든 요소 위로 */
-  
+
 
   background-image: url("/images/pay-logo.svg");
   background-repeat: round;
@@ -121,11 +121,11 @@ div {
 }
 
 hr {
-    border: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 
@@ -247,4 +247,30 @@ hr {
     opacity: 1;
   }
 }
+
 /* 연출 */
+
+.text-desc {
+  color: #898787;
+}
+
+.bg-card-0 {
+  /* 테이블이 아니어야 된다 */
+  background-color:#ffd7d7;
+  /* 테이틀이어야 된다 */
+  --bs-table-bg: #ffd7d7;
+}
+
+.bg-card-1 {
+  /* 테이블이 아니어야 된다 */
+  background-color:#8fffac;
+  /* 테이틀이어야 된다 */
+  --bs-table-bg:#8fffac;
+}
+
+.bg-card-2 {
+  /* 테이블이 아니어야 된다 */
+  background-color:#cfd4ff;
+  /* 테이틀이어야 된다 */
+  --bs-table-bg: #cfd4ff;
+}
