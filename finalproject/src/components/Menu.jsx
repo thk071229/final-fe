@@ -123,6 +123,8 @@ export default function Menu() {
 
   const sendDate = useCallback(async ()=>{
 
+    console.log("데이터 시작");
+
     try {
           const { data } = await axios.post("http://localhost:8080/schedule/insert",
             
@@ -134,14 +136,15 @@ export default function Menu() {
         tagNoList : selectTag
         
       } )
-    
-    toast.success("["+data.scheduleName + "] 일정, 등록 완료!");
-    console.log("데이터 확인" + data.scheduleNo);
-    closeModal();
-    navigate(`/schedulePage/${data.scheduleNo}`);
+      toast.success("["+data.scheduleName + "] 일정, 등록 완료!");
+      console.log("데이터 확인" + data.scheduleNo);
+      closeModal();
+      navigate(`/schedulePage/${data.scheduleNo}`);
 
     } catch (error) {
       toast.error("일정 등록이 실패되었습니다.");
+
+
     }
 
   }, [scheduleName,startDate]);
@@ -198,6 +201,12 @@ export default function Menu() {
                     </Link>
                 </li>
                             </>)} 
+                <li className="nav-item" onClick={closeMenu}>
+                    <Link className="nav-link" to="/scheduleList/">
+                        <i className="fa-solid fa-user-plus"></i>
+                        <span>일정조회</span>
+                    </Link>
+                </li>
             <li className="nav-item dropdown">
               <a className="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
               <div className="dropdown-menu">
