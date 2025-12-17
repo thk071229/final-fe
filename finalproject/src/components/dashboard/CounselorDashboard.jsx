@@ -1,21 +1,21 @@
+import axios from "axios";
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode"
 
 const API_URL = '/chat';
 
 const useAuth = () => {
-    const token = localStorage.getItem("token");
+    const rawToken = sessionStorage.getItem("accessToken");
 
-    if (!token) {
-        return {
-            isLoggedIn: false,
-            userLevel: null,
-            loginId: null,
-        };
+    if (!rawToken) {
+        return { isLoggedIn: false, userLevel: null, loginId: null };
     }
 
     try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
+        const token = rawToken.replace(/"/g, '');
+        const payload = jwtDecode(token);
+        console.log(payload);
         return {
             isLoggedIn: true,
             userLevel: payload.loginLevel,
@@ -23,11 +23,7 @@ const useAuth = () => {
         };
     } catch (e) {
         console.error("JWT 파싱 오류:", e);
-        return {
-            isLoggedIn: false,
-            userLevel: null,
-            loginId: null,
-        };
+        return { isLoggedIn: false, userLevel: null, loginId: null };
     }
 };
 
@@ -57,33 +53,39 @@ export default function CounselorDashboard() {
 
     const fetchChatRooms = async () => {
         try {
-        const response = await fetch(`${API_URL}/counselor/list`); 
+            const rawToken = sessionStorage.getItem("accessToken");
+            if (!rawToken) return;
+            const token = rawToken.replace(/"/g, '');
+            console.log(token)
+            const response = await axios.get(`${API_URL}/counselor/list`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
-        if (response.status === 403 || response.status === 404) {
-            console.error("백엔드 권한 오류:", response.status);
-            alert("상담사 전용 페이지입니다. 권한이 없습니다. (API 응답)");
-            navigate("/unauthorized", { replace: true });
-            return;
-        }
+            if (response.status === 403 || response.status === 404) {
+                console.error("백엔드 권한 오류:", response.status);
+                alert("상담사 전용 페이지입니다. 권한이 없습니다. (API 응답)");
+                navigate("/unauthorized", { replace: true });
+                return;
+            }
 
-        if (!response.ok) {
-            throw new Error(`API 응답 실패: ${response.statusText}`);
-        }
-        const data = await response.json();
+            if (response.status !== 200) {
+                throw new Error(`API 응답 실패: ${response.statusText}`);
+            }
+            const { data } = response;
 
-        const convertedRooms = data.map(dto => ({
-            id: dto.chatNo,
-            userName: `고객 #${dto.chatNo}`,
-            status: dto.chatStatus,
-            title: dto.chatStatus === "WAITING" ? "새로운 상담 요청" : `진행 중인 채팅 (${dto.chatMaxCount})`,
-            userGrade: "N/A",
-            chatId: dto.chatId,
-            chatLevel: dto.chatLevel
-        }));
+            const convertedRooms = data.map(dto => ({
+                id: dto.chatNo,
+                userName: `고객 #${dto.chatNo}`,
+                status: dto.chatStatus,
+                title: dto.chatStatus === "WAITING" ? "새로운 상담 요청" : `진행 중인 채팅 (${dto.chatMaxCount})`,
+                userGrade: "N/A",
+                chatId: dto.chatId,
+                chatLevel: dto.chatLevel
+            }));
 
         } catch (error) {
-          console.error("채팅 목록 로드 오류:", error);
-      }
+            console.error("채팅 목록 로드 오류:", error);
+        }
     };
 
     useEffect(() => {
@@ -95,7 +97,9 @@ export default function CounselorDashboard() {
     }, [messages, selectedRoomId]);
 
     const updateChatStatus = async (chatNo, newStatus) => {
-        const token = localStorage.getItem("token");
+        const rawToken = sessionStorage.getItem("accessToken");
+        if (!rawToken) return;
+        const token = rawToken.replace(/"/g, '');
 
         const updateData = {
             chatNo: chatNo,
@@ -104,7 +108,7 @@ export default function CounselorDashboard() {
         };
 
         try {
-            const response = await fetch(`${API_URL}/status`, {
+            const response = await axios.post(`${API_URL}/status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +193,7 @@ export default function CounselorDashboard() {
                         const badge = getBadgeStyle(room.status);
 
                         return (
-                            <div 
+                            <div
                                 key={room.id}
                                 onClick={() => handleRoomClick(room.id)}
                                 style={{
@@ -198,7 +202,7 @@ export default function CounselorDashboard() {
                                     borderLeft: `4px solid ${badge.color}`,
                                 }}
                             >
-                                <div style={{ display:'flex', justifyContent:'space-between', fontWeight:'bold' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                                     {room.userName}
                                     <span style={{
                                         fontSize: '12px',
@@ -210,7 +214,7 @@ export default function CounselorDashboard() {
                                         {badge.text}
                                     </span>
                                 </div>
-                                <div style={{ fontSize:'13px', color:'#666', marginTop:'5px' }}>
+                                <div style={{ fontSize: '13px', color: '#666', marginTop: '5px' }}>
                                     {room.title}
                                 </div>
                             </div>
@@ -239,7 +243,7 @@ export default function CounselorDashboard() {
 
                         <div style={styles.messageArea}>
                             {currentMessages.map((msg, i) => (
-                                <div 
+                                <div
                                     key={i}
                                     style={{
                                         ...styles.messageRow,
@@ -261,7 +265,7 @@ export default function CounselorDashboard() {
 
                         {currentRoom.status === 'ACTIVE' ? (
                             <div style={styles.inputArea}>
-                                <input 
+                                <input
                                     type="text"
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
@@ -289,7 +293,7 @@ export default function CounselorDashboard() {
             <div style={styles.rightPane}>
                 <div style={styles.paneHeader}>고객 정보</div>
                 {currentRoom ? (
-                    <div style={{ padding:'20px' }}>
+                    <div style={{ padding: '20px' }}>
                         <div style={styles.infoCard}>
                             <strong>회원 정보</strong>
                             <p>방 번호: {currentRoom.id}</p>
@@ -305,7 +309,7 @@ export default function CounselorDashboard() {
                         </div>
                     </div>
                 ) : (
-                    <div style={{ textAlign:'center', color:'#999', marginTop:'50px' }}>
+                    <div style={{ textAlign: 'center', color: '#999', marginTop: '50px' }}>
                         선택된 고객이 없습니다.
                     </div>
                 )}
@@ -336,7 +340,7 @@ const styles = {
         fontWeight: 'bold',
         fontSize: '16px',
         backgroundColor: '#fafafa'
-    }, 
+    },
     listContainer: {
         overflowY: 'auto',
         flex: 1
@@ -385,7 +389,7 @@ const styles = {
         fontSize: '12px',
         color: '#999',
         border: '1px solid #999',
-        padding: '5px 10px', 
+        padding: '5px 10px',
         borderRadius: '5px'
     },
     messageArea: {

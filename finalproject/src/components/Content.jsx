@@ -13,7 +13,9 @@ import AccountPayDetail from "./account/AccountPayDetail";
 {/* 회원 관련 */ }
 import AccountJoin from "./account/accountJoin/AccountJoin";
 import AccountLogin from "./account/accountLogin";
-
+import AccountJoinFinish from "./account/accountJoin/AccountJoinFinish";
+import AccountFindId from "./account/accountFind/AccountFindId";
+import AccountFindPw from "./account/accountFind/AccountFindPw";
 {/* 일정 관련 */ }
 import ScheduleData from "./schedule/ScheduleData";
 import Schedule from "./schedule/Schedule";
@@ -22,9 +24,18 @@ import SchedulePage from "./schedule/SchedulePage";
 import ScheduleSearch from "./schedule/ScheduleSearch";
 import Main from "./templates/Main";
 
+{/* 마이페이지 */ }
 
 // 고객센터 화면
 import CounselorDashboard from "./dashboard/CounselorDashboard";
+import Unauthorized from "./error/Unauthorized";
+import MyPage from "./mypage/mypage";
+import MyInformation from "./mypage/MyInformation";
+import MyPayment from "./mypage/MyPayment";
+import MySchedule from "./mypage/MySchedule";
+import MyWishList from "./mypage/MyWishList";
+
+
 
 
 
@@ -45,8 +56,11 @@ export default function Content() {
                     {/* 회원 관련 페이지 */}
                     <Route path="/account/join" element={<AccountJoin />}></Route>
                     <Route path="/account/login" element={<AccountLogin />}></Route>
+                    <Route path="/account/findId" element={<AccountFindId />}></Route>
+                    <Route path="/account/findPw" element={<AccountFindPw />}></Route>
+                    <Route path="/account/joinFinish" element={<AccountJoinFinish />}></Route>
 
-                    <Route path="kakaotest" element={<KakaoMapTest />}></Route>
+
 
                     {/* 카카오페이 관련 */}
                     <Route path="/kakaopay/buy" element={<KakaoPay />}></Route>
@@ -70,10 +84,24 @@ export default function Content() {
                         <Route path="shearch" element={<ScheduleSearch />} />
                     </Route>
 
+                    <Route path="kakaotest" element={<KakaoMapTest />}></Route>
+
 
                     <Route path="/schedule" element={<Schedule />} />
 
+                    {/* 마이페이지(중첩 라우팅) */}
+                    <Route path="/mypage" element={<MyPage />}>
+                        <Route path="info" element={<MyInformation />} />
+                        <Route path="pay" element={<MyPayment />} />
+                        <Route path="schedule" element={<MySchedule />} />
+                        <Route path="wishlist" element={<MyWishList />} />
+                    </Route>
+
+
                     <Route path="/" element={<Main />} />
+
+                    {/* 에러 페이지 */}
+                    <Route path="/unauthorized" element={<Unauthorized />}></Route>
                 </Routes>
             </div>
         </div>

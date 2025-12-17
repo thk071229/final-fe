@@ -2,13 +2,13 @@ import { atom } from "jotai";
 import {atomWithStorage} from "jotai/utils";
 
 //회원의 아이디 상태
-export const loginIdState = atomWithStorage("loginIdState", "", sessionStorage);//joati + persist
+export const loginIdState = atomWithStorage("loginId", "", sessionStorage);//joati + persist
 
 //회원의 등급 상태
-export const loginLevelState = atomWithStorage("loginLevelState", "", sessionStorage);
+export const loginLevelState = atomWithStorage("loginLevel", "", sessionStorage);
 
 //accessToken
-export const accessTokenState = atomWithStorage("accessTokenState", "", sessionStorage);//브라우저를 닫으면 로그인이 풀림
+export const accessTokenState = atomWithStorage("accessToken", "", sessionStorage);//브라우저를 닫으면 로그인이 풀림
 
 //refreshToken
 export const refreshTokenState = atomWithStorage("refreshToken", "", sessionStorage);
@@ -56,13 +56,13 @@ export const messagesByChatIdState = atom({});
 export const wsConnectionState = atom("disconnected");
 
 // DevTools에서 확인하기 위한 이름 설정
-loginIdState.debugLabel = "loginIdState";
-loginLevelState.debugLabel = "loginLevelState";
+loginIdState.debugLabel = "loginId";
+loginLevelState.debugLabel = "loginLevel";
 loginState.debugLabel = "loginState";
-accessTokenState.debugLabel = "accessTokenState";
+accessTokenState.debugLabel = "accessToken";
 adminState.debugLabel = "adminState";
 loginCompleteState.debugLabel = "loginCompleteState";
-refreshTokenState.debugLabel = "refreshTokenState";
+refreshTokenState.debugLabel = "refreshToken";
 
 counselorState.debugLabel = "counselorState";
 currentChatIdState.debugLabel = "currentChatIdState";

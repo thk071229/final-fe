@@ -1,203 +1,255 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import Jumbotron from "../templates/Jumbotron";
 import "./KakaoPay.css";
 import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { numberWithComma } from "../../utils/format";
 
 export default function KakaoPay() {
 
-    const [giftcardList, setGiftcardList] = useState([]);
+    /* =======================
+       화면 크기 감지
+    ======================= */
+    const [width, setWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const isMobile = width < 768;
+
+    /* =======================
+       상태
+    ======================= */
+    const [shopList, setShopList] = useState([]);
     const [checkAll, setCheckAll] = useState(false);
 
     useEffect(() => {
         loadData();
     }, []);
 
+    const loadData = useCallback(async () => {
+        const { data } = await axios.get("/shop/");
+        setShopList(
+            data.map(item => ({
+                ...item,
+                check: false,
+                qty: 1
+            }))
+        );
+    }, []);
+
+    /* =======================
+       체크 로직
+    ======================= */
     const changeCheckAll = useCallback(e => {
-        setCheckAll(e.target.checked);
-        setGiftcardList(prev =>
-            prev.map(
-                giftcard => ({
-                    ...giftcard,
-                    check: e.target.checked,
-                })
+        const checked = e.target.checked;
+        setCheckAll(checked);
+        setShopList(prev =>
+            prev.map(shop => ({ ...shop, check: checked }))
+        );
+    }, []);
+
+    const changeShopCheck = useCallback(e => {
+        const { value, checked } = e.target;
+        const next = shopList.map(shop =>
+            shop.shopNo === Number(value)
+                ? { ...shop, check: checked }
+                : shop
+        );
+
+        setShopList(next);
+        setCheckAll(next.every(shop => shop.check));
+    }, [shopList]);
+
+    const changeShopQty = useCallback((e, shop) => {
+        const qty = parseInt(e.target.value);
+        setShopList(prev =>
+            prev.map(s =>
+                s.shopNo === shop.shopNo
+                    ? { ...s, qty: Number.isNaN(qty) ? 0 : qty }
+                    : s
             )
         );
     }, []);
 
-    const checkedGiftcardList = useMemo(() => {
-        return giftcardList.filter(giftcard => giftcard.check === true);
-    }, [giftcardList]);
+    /* =======================
+       계산
+    ======================= */
+    const checkedShopList = useMemo(
+        () => shopList.filter(shop => shop.check),
+        [shopList]
+    );
 
-    const checkedTotal = useMemo(() => {
-        return checkedGiftcardList.reduce(
-            (total, giftcard) => total + (giftcard.giftcardPrice * giftcard.qty),
-            0
-        );
-    }, [checkedGiftcardList]);
+    const checkedTotal = useMemo(
+        () =>
+            checkedShopList.reduce(
+                (sum, shop) => sum + shop.shopPrice * shop.qty,
+                0
+            ),
+        [checkedShopList]
+    );
 
-    const loadData = useCallback(async () => {
-        const { data } = await axios.get("/giftcard/");
-
-        const convert = data.map(g => ({
-            ...g,
-            check: false,
-            qty: 1
-        }));
-        setGiftcardList(convert);
-    }, []);
-
-    const changeGiftcardCheck = useCallback(e => {
-        const { value, checked } = e.target;
-
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === parseInt(value)) {
-                return { ...giftcard, check: checked };
-            }
-            return giftcard;
-        });
-
-        const count = convert.filter(giftcard => giftcard.check === true).length;
-
-        setGiftcardList(convert);
-        setCheckAll(convert.length === count);
-    }, [giftcardList]);
-
-    const changeGiftcardQty = useCallback(e => {
-        const giftcardNo = e.target.dataset.pk;
-        const value = e.target.value;
-
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === parseInt(giftcardNo)) {
-                return { ...giftcard, qty: parseInt(value) };
-            }
-            return giftcard;
-        });
-
-        setGiftcardList(convert);
-    }, [giftcardList]);
-
-    const changeGiftcardQty2 = useCallback((e, obj) => {
-        const convert = giftcardList.map(giftcard => {
-            if (giftcard.giftcardNo === obj.giftcardNo) {
-                const number = parseInt(e.target.value);
-                return { ...giftcard, qty: Number.isNaN(number) ? 0 : number };
-            }
-            return giftcard;
-        });
-        setGiftcardList(convert);
-    }, [giftcardList]);
-
+    /* =======================
+       결제
+    ======================= */
     const navigate = useNavigate();
-    const purchase = useCallback(async () => {
 
-        const convertList = checkedGiftcardList.map(giftcard => ({
-            no: giftcard.giftcardNo,
-            qty: giftcard.qty
+    const purchase = useCallback(async () => {
+        const payload = checkedShopList.map(shop => ({
+            no: shop.shopNo,
+            qty: shop.qty
         }));
 
-        const { data } = await axios.post("/kakaopay/buy", convertList);
-
+        const { data } = await axios.post("/kakaopay/buy", payload);
         navigate(data.next_redirect_pc_url);
+    }, [checkedShopList, navigate]);
 
-    }, [checkedGiftcardList]);
-
-    return (<>
-
-        <div
-            className="fade-jumbotron"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <Jumbotron subject="카카오페이 결제" detail="무엇을 살지 정해야 함" />
-        </div>
-
-        <div
-            className="fade-link"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <div className="row my-4">
-                <div className="col-6 text-center">
-                    <Link to="/kakaopay/pay/info" className="none-decortion">결제 내역 보기</Link>
-                </div>
-                <div className="col-6 text-center">
-                    <Link to="/" className="none-decortion">홈</Link>
+    /* =======================
+       렌더
+    ======================= */
+    return (
+        <>
+            <div className="row mt-4">
+                <div className="col">
+                    <h3 className="text-center">일정 최대 개수 증가를 구매하세요</h3>
+                    <p className="text-center text-desc">
+                        일정 최대 개수를 증가시켜서 더욱 쾌적하게 즐기세요.
+                    </p>
                 </div>
             </div>
-        </div>
 
-        <div className="row mt-4">
-            <div className="col">
-                <div className="text-nowrap table-responsive">
-                    <div
-                        className="fade-item"
-                        style={{ animationDelay: `${0.03}s` }}
-                    >
-                        <table className="table table-striped">
+            <div className="row mt-4">
+                <div className="col">
+                    {isMobile ? (
+                        /* =======================
+                           모바일: 테이블
+                        ======================= */
+                        <table className="table">
                             <thead>
                                 <tr>
                                     <th>
-                                        <input type="checkbox"
+                                        <input
+                                            type="checkbox"
                                             checked={checkAll}
-                                            onChange={changeCheckAll} />
+                                            onChange={changeCheckAll}
+                                        />
                                     </th>
                                     <th>이름</th>
                                     <th>금액</th>
-                                    <th>포인트</th>
+                                    <th>증가량</th>
                                     <th width="100">수량</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {giftcardList.map((giftcard) => (
-                                    <tr key={giftcard.giftcardNo}>
+                                {shopList.map((shop, index) => (
+                                    <tr key={shop.shopNo} className={`bg-card-${index % 3}`}>
                                         <td className="checkbox-cell">
-                                            <input type="checkbox" value={giftcard.giftcardNo}
-                                                checked={giftcard.check} onChange={changeGiftcardCheck} />
+                                            <input
+                                                type="checkbox"
+                                                value={shop.shopNo}
+                                                checked={shop.check}
+                                                onChange={changeShopCheck}
+                                            />
                                         </td>
+                                        <td className="checkbox-cell">{shop.shopName}</td>
+                                        <td className="checkbox-cell">{numberWithComma(shop.shopPrice)}원</td>
+                                        <td className="checkbox-cell">{numberWithComma(shop.shopValue)}회</td>
                                         <td className="checkbox-cell">
-                                            {giftcard.giftcardName}
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            {numberWithComma(giftcard.giftcardPrice)}원
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            {numberWithComma(giftcard.giftcardPoint)}포인트
-                                        </td>
-                                        <td className="checkbox-cell">
-                                            <input type="number" inputMode="numeric"
-                                                className="form-control" min={1}
-                                                value={numberWithComma(giftcard.qty)}
-                                                disabled={giftcard.check === false}
-                                                onChange={e => changeGiftcardQty2(e, giftcard)} />
+                                            <input
+                                                type="number"
+                                                className="form-control"
+                                                min={1}
+                                                value={shop.qty}
+                                                disabled={!shop.check}
+                                                onChange={e => changeShopQty(e, shop)}
+                                            />
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+                    ) : (
+                        /* =======================
+                           데스크톱: 카드
+                        ======================= */
+                        <div className="row justify-content-center mx-5 g-2">
+                            <div className="col-12 text-center mb-2">
+                                <label className="d-inline-flex align-items-center gap-1 fw-semibold">
+                                    <input
+                                        type="checkbox"
+                                        checked={checkAll}
+                                        onChange={changeCheckAll}
+                                    />
+                                    모두 구매
+                                </label>
+                            </div>
 
-        <div
-            className="fade-label"
-            style={{ animationDelay: `${0.03}s` }}
-        >
-            <div className="row mt-4">
-                <div className="col fs-2">
-                    {numberWithComma(checkedGiftcardList.length)}개의 상품권
-                </div>
-                <div className="col text-end fs-2">
-                    금액:{numberWithComma(checkedTotal)}원
+                            {shopList.map((shop, index) => (
+                                <div
+                                    key={shop.shopNo}
+                                    className="col-12 col-sm-6 col-md-4 col-lg-3"
+                                >
+                                    <div className={`shadow rounded-4 p-4 h-100 bg-card-${index % 3}`}>
+                                        <p className="text-center fw-semibold">
+                                            <input
+                                                type="checkbox"
+                                                value={shop.shopNo}
+                                                checked={shop.check}
+                                                onChange={changeShopCheck}
+                                                className="me-2"
+                                            />
+                                            {numberWithComma(shop.shopValue)}회 증가
+                                        </p>
+
+                                        <p className="text-center">
+                                            {shop.shopDesc}
+                                        </p>
+
+                                        <p className="text-center">
+                                            {numberWithComma(shop.shopPrice)}원
+                                        </p>
+
+                                        <div className="d-flex justify-content-center">
+                                            <input
+                                                type="number"
+                                                className="form-control text-center"
+                                                style={{ width: "60px" }}
+                                                min={1}
+                                                value={shop.qty}
+                                                disabled={!shop.check}
+                                                onChange={e => changeShopQty(e, shop)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
             <div className="row mt-4">
-                <div className="col text-end">
-                    <button className="btn btn-lg btn-outline-success" onClick={purchase}
-                        disabled={checkedGiftcardList.length === 0}>구매</button>
+                <h5 className="col text-start">
+                    {checkedShopList.length}개의 상품권
+                </h5>
+                <h5 className="col text-end">
+                    금액: {numberWithComma(checkedTotal)}원
+                </h5>
+            </div>
+
+            <div className="row mt-4">
+                <div className="col text-center">
+                    <button
+                        className="btn btn-lg btn-outline-success"
+                        onClick={purchase}
+                        disabled={checkedShopList.length === 0}
+                    >
+                        구매
+                    </button>
                 </div>
             </div>
-        </div>
-    </>)
+        </>
+    );
 }
