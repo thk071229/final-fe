@@ -21,6 +21,7 @@ export default function KakaoMapTest() {
                 {
                         routeKey : uuid1##uuid2,
                         priority : "RECOMMEND", "TIME", "DISTANCE",
+                        type : "CAR", "WALK",
                         distance: int,
                         duration: int,
                         linepath : [ linepath ]
@@ -30,6 +31,7 @@ export default function KakaoMapTest() {
                     
                         routeKey : uuid2##uuid3,
                         priority : "RECOMMEND", "TIME", "DISTANCE",
+                        type : "CAR", "WALK",
                         distance: int,
                         duration: int,
                         linepath : [ linepath ]
@@ -315,7 +317,7 @@ export default function KakaoMapTest() {
         return (
             polyline
                 // 선택된 타입에 따라 필터링 (selectedType: { RECOMMEND: true, ... })
-                // .filter(pl => selectedType[pl.priority])
+                .filter(pl => selectedSearch === pl.type)
                 .map((pl, idx) => (
                     <Polyline
                         key={idx}
@@ -329,12 +331,11 @@ export default function KakaoMapTest() {
                 ))
         );
         
-    }, [polyline, selectedType]); // polyline이 업데이트되면 렌더링
+    }, [polyline, selectedType, selectedSearch]); // polyline이 업데이트되면 렌더링
 
     
 
     const handleSearchCarRoute = useCallback(async (e) => {
-        resetData();
         if(days[selectedDay]?.markerIds.length <= 1) return;
         const priorities = ["RECOMMEND", "TIME", "DISTANCE"];
         if(days[selectedDay]?.markerIds.length === 2) {
@@ -372,7 +373,8 @@ export default function KakaoMapTest() {
                     priority: priority,
                     distance: distance,
                     duration: duration,
-                    linepath: linepath, 
+                    linepath: linepath,
+                    type: "CAR",
                 };
                 console.log(routeSegment);
                 newRoutes.push(routeSegment);
@@ -381,16 +383,30 @@ export default function KakaoMapTest() {
         });
 
         // 5. State 업데이트 (한 번만 호출)
-        setDays(prev => ({
-            ...prev,
-            [selectedDay]: {
-                ...prev[selectedDay],
-                routes: [
-                    ...(prev[selectedDay]?.routes || []), // 기존 경로 유지
-                    ...newRoutes, // 새 경로 추가
-                ],
-            },
-        }));
+        setDays(prevDays => {
+                // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
+                const existingRoutes = prevDays[selectedDay]?.routes || [];
+                
+                // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
+                const newRouteKeys = new Set(newRoutes.map(route => route.type));
+
+                // 3. 기존 경로들 중에서, newRoutes의 type과 겹치지 않는 경로만 필터링하여 남깁니다.
+                const filteredExistingRoutes = existingRoutes.filter(
+                    route => !newRouteKeys.has(route.type)
+                );
+
+                // 4. 필터링된 기존 경로들과 새로운 경로들(newRoutes)을 합쳐서 새로운 routes 배열을 만듭니다.
+                const updatedRoutes = [...filteredExistingRoutes, ...newRoutes];
+
+                // 5. 이전 Days 상태를 복사하고, selectedDay의 routes만 갱신된 배열로 교체하여 반환합니다.
+                return {
+                    ...prevDays,
+                    [selectedDay]: {
+                        ...prevDays[selectedDay], // 기존 selectedDay의 다른 속성들(e.g., stops, etc.) 유지
+                        routes: updatedRoutes // 중복 제거 및 갱신된 경로 배열로 대체
+                    }
+                };
+            });
 
         } else {
             const selectedDayMarkerData = days[selectedDay]?.markerIds.map(id => markerData[id]);
@@ -417,28 +433,42 @@ export default function KakaoMapTest() {
                     priority : priority,
                     distance : distance,
                     duration : duration,
-                    linepath : linepath
+                    linepath : linepath,
+                    type : "CAR",
                 };
                 
                 newRoutes.push(routeSegment);
 
 
             })
-            setDays(prev => ({
-               ...prev,
-               [selectedDay]: {
-                    ...prev[selectedDay],
-                    routes : [
-                        ...(prev[selectedDay]?.routes || []),
-                        ...newRoutes
-                    ]
-                }
-            }));
+            setDays(prevDays => {
+                // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
+                const existingRoutes = prevDays[selectedDay]?.routes || [];
+                
+                // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
+                const newRouteKeys = new Set(newRoutes.map(route => route.type));
+
+                // 3. 기존 경로들 중에서, newRoutes의 type과 겹치지 않는 경로만 필터링하여 남깁니다.
+                const filteredExistingRoutes = existingRoutes.filter(
+                    route => !newRouteKeys.has(route.type)
+                );
+
+                // 4. 필터링된 기존 경로들과 새로운 경로들(newRoutes)을 합쳐서 새로운 routes 배열을 만듭니다.
+                const updatedRoutes = [...filteredExistingRoutes, ...newRoutes];
+
+                // 5. 이전 Days 상태를 복사하고, selectedDay의 routes만 갱신된 배열로 교체하여 반환합니다.
+                return {
+                    ...prevDays,
+                    [selectedDay]: {
+                        ...prevDays[selectedDay], // 기존 selectedDay의 다른 속성들(e.g., stops, etc.) 유지
+                        routes: updatedRoutes // 중복 제거 및 갱신된 경로 배열로 대체
+                    }
+                };
+            });
         }
     }, [days, selectedDay])
 
     const handleSearchWalkRoute = useCallback(async (e) => {
-        resetData();
         if(days[selectedDay]?.markerIds.length <= 1) return;
         const priorities = ["RECOMMEND", "TIME", "DISTANCE"];
         if(days[selectedDay]?.markerIds.length === 2) {
@@ -451,31 +481,51 @@ export default function KakaoMapTest() {
             // console.log(results);
             const { data } = await axios.post(`/kakaoMap/searchForWalk?priority=${priorities[0]}`, Object.values(selectedDayMarkerData))
             const newRoutes = [];
+            console.log(data)
 
             const startId = days[selectedDay].markerIds[0]; // 마커 ID
             const endId = days[selectedDay].markerIds[1]; // 마커 ID
             const routeKey = `${startId}##${endId}`;
 
+
             // 4. 단일 경로 세그먼트 객체 (RouteSegmentDto와 매핑) 생성
             const routeSegment = {
-                ...data,
                 routeKey: routeKey,
+                distance: data.distance[0], // 해당 구간의 거리
+                duration: data.duration[0], // 해당 구간의 시간
+                linepath: data.linepath[0], // 해당 구간의 경로
+                priority: data.priority, // 전체 경로의 우선순위는 동일
+                type : data.type,
             };
             console.log(routeSegment);
 
             newRoutes.push(routeSegment);
 
             // 5. State 업데이트 (한 번만 호출)
-            setDays(prev => ({
-                ...prev,
-                [selectedDay]: {
-                    ...prev[selectedDay],
-                    routes: [
-                        ...(prev[selectedDay]?.routes || []), // 기존 경로 유지
-                        ...newRoutes, // 새 경로 추가
-                    ],
-                },
-            }));
+            setDays(prevDays => {
+                // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
+                const existingRoutes = prevDays[selectedDay]?.routes || [];
+                
+                // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
+                const newRouteKeys = new Set(newRoutes.map(route => route.type));
+
+                // 3. 기존 경로들 중에서, newRoutes의 type과 겹치지 않는 경로만 필터링하여 남깁니다.
+                const filteredExistingRoutes = existingRoutes.filter(
+                    route => !newRouteKeys.has(route.type)
+                );
+
+                // 4. 필터링된 기존 경로들과 새로운 경로들(newRoutes)을 합쳐서 새로운 routes 배열을 만듭니다.
+                const updatedRoutes = [...filteredExistingRoutes, ...newRoutes];
+
+                // 5. 이전 Days 상태를 복사하고, selectedDay의 routes만 갱신된 배열로 교체하여 반환합니다.
+                return {
+                    ...prevDays,
+                    [selectedDay]: {
+                        ...prevDays[selectedDay], // 기존 selectedDay의 다른 속성들(e.g., stops, etc.) 유지
+                        routes: updatedRoutes // 중복 제거 및 갱신된 경로 배열로 대체
+                    }
+                };
+            });
 
         } else {
             const selectedDayMarkerData = days[selectedDay]?.markerIds.map(id => markerData[id]);
@@ -494,23 +544,38 @@ export default function KakaoMapTest() {
                     distance: distance, // 해당 구간의 거리
                     duration: data.duration[index], // 해당 구간의 시간
                     linepath: data.linepath[index], // 해당 구간의 경로
-                    priority: data.priority // 전체 경로의 우선순위는 동일
+                    priority: data.priority, // 전체 경로의 우선순위는 동일
+                    type : data.type,
                 };
                 
                 newRoutes.push(routeSegment);
             });
             console.log(newRoutes);
 
-            setDays(prev => ({
-               ...prev,
-               [selectedDay]: {
-                    ...prev[selectedDay],
-                    routes : [
-                        ...(prev[selectedDay]?.routes || []),
-                        ...newRoutes
-                    ]
-                }
-            }));
+            setDays(prevDays => {
+                // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
+                const existingRoutes = prevDays[selectedDay]?.routes || [];
+                
+                // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
+                const newRouteKeys = new Set(newRoutes.map(route => route.type));
+
+                // 3. 기존 경로들 중에서, newRoutes의 type과 겹치지 않는 경로만 필터링하여 남깁니다.
+                const filteredExistingRoutes = existingRoutes.filter(
+                    route => !newRouteKeys.has(route.type)
+                );
+
+                // 4. 필터링된 기존 경로들과 새로운 경로들(newRoutes)을 합쳐서 새로운 routes 배열을 만듭니다.
+                const updatedRoutes = [...filteredExistingRoutes, ...newRoutes];
+
+                // 5. 이전 Days 상태를 복사하고, selectedDay의 routes만 갱신된 배열로 교체하여 반환합니다.
+                return {
+                    ...prevDays,
+                    [selectedDay]: {
+                        ...prevDays[selectedDay], // 기존 selectedDay의 다른 속성들(e.g., stops, etc.) 유지
+                        routes: updatedRoutes // 중복 제거 및 갱신된 경로 배열로 대체
+                    }
+                };
+            });
         }
     }, [days, selectedDay])
 
@@ -521,10 +586,6 @@ export default function KakaoMapTest() {
             await handleSearchWalkRoute(e);
         }
     }, [selectedSearch, handleSearchCarRoute, handleSearchWalkRoute])
-
-    const resetData = useCallback(e => {
-        setPolyLine([]);
-    }, [])
 
     const selectType = useCallback(e => {
         const {name} = e.target;
@@ -569,7 +630,7 @@ export default function KakaoMapTest() {
         }
 
         const linesToRender = routes.map(segment => {
-        // segment: { routeKey: "uuid1-uuid2", priority: "RECOMMEND", linepath: [...] }
+        // segment: { routeKey: "uuid1-uuid2", priority: "RECOMMEND", linepath: [...], type:"WALK?CAR" }
         
             // linepath가 빈 배열이 아닌지 확인해야 합니다.
             if (!segment.linepath || segment.linepath.length === 0) {
@@ -580,7 +641,8 @@ export default function KakaoMapTest() {
             // 렌더링 상태 (linesToRender)에 필요한 객체 형태로 변환
             return {
                 priority: segment.priority,
-                linepath: segment.linepath
+                linepath: segment.linepath,
+                type: segment.type,
             };
         }).filter(segment => segment !== null); // null 값을 필터링하여 제거
 
@@ -588,7 +650,7 @@ export default function KakaoMapTest() {
         setPolyLine(linesToRender);
         
         // selectedDay나 days가 바뀔 때마다 실행되어 polyline을 갱신합니다.
-    }, [selectedDay, days, setPolyLine]);
+    }, [selectedDay, days, setPolyLine, selectedSearch]);
 
 
 

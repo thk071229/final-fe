@@ -62,6 +62,7 @@ export const Marker = memo(function Marker({
                             {/* <div><span>이전시간 {duration?.prev?.RECOMMEND}</span></div> */}
                             {duration?.next > 0 && (
                                 <div><span>{duration?.next}초</span></div>
+                                
                             )}
                             {/* <div><span>이전거리 {distance?.prev?.RECOMMEND}</span></div> */}
                             {distance?.next > 0 && (
