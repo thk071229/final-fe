@@ -31,6 +31,13 @@ export default function CounselorDashboard() {
     const navigate = useNavigate();
     const { isLoggedIn, userLevel, loginId } = useAuth();
     const REQUIRED_LEVEL = '상담사';
+    const [room, setRoom] = useState([]);
+    const [selectedRoomId, setSelectedRoomId] = useState(null);
+    const [inputText, setInputText] = useState("");
+    const [messages, setMessages] = useState({});
+    const messagesEndRef = useRef(null);
+
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!isLoggedIn) {
@@ -45,12 +52,6 @@ export default function CounselorDashboard() {
         }
     }, [isLoggedIn, userLevel, navigate]);
 
-    const [rooms, setRooms] = useState([]);
-    const [selectedRoomId, setSelectedRoomId] = useState(null);
-    const [inputText, setInputText] = useState("");
-    const [messages, setMessages] = useState({});
-    const messagesEndRef = useRef(null);
-
     const fetchChatRooms = async () => {
         try {
             const rawToken = sessionStorage.getItem("accessToken");
@@ -61,30 +62,31 @@ export default function CounselorDashboard() {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (response.status === 403 || response.status === 404) {
-                console.error("백엔드 권한 오류:", response.status);
-                alert("상담사 전용 페이지입니다. 권한이 없습니다. (API 응답)");
-                navigate("/unauthorized", { replace: true });
-                return;
-            }
+            if (response.status === 200) {
+                const { data } = response;
 
-            if (response.status !== 200) {
-                throw new Error(`API 응답 실패: ${response.statusText}`);
-            }
-            const { data } = response;
+                const convertedRooms = data.map(dto => ({
+                    id: dto.chatNo,
+                    userName: `고객 #${dto.chatNo}`,
+                    status: dto.chatStatus,
+                    title: dto.chatStatus === "WAITING" ? "새로운 상담 요청" : `진행 중인 채팅`,
+                    userGrade: "N/A",
+                    chatId: dto.chatId,
+                    chatLevel: dto.chatLevel
+                }));
 
-            const convertedRooms = data.map(dto => ({
-                id: dto.chatNo,
-                userName: `고객 #${dto.chatNo}`,
-                status: dto.chatStatus,
-                title: dto.chatStatus === "WAITING" ? "새로운 상담 요청" : `진행 중인 채팅 (${dto.chatMaxCount})`,
-                userGrade: "N/A",
-                chatId: dto.chatId,
-                chatLevel: dto.chatLevel
-            }));
+                setRoom(convertedRooms);
+            }
 
         } catch (error) {
             console.error("채팅 목록 로드 오류:", error);
+            if (error.response && (error.response.status === 403 || error.response.status === 401)) {
+                alert("상담사 전용 페이지입니다. 권한이 없습니다.");
+                navigate("/unauthorized");
+                return;
+            }
+        } finally {
+            setIsLoading(false); // 에러가 나든 성공하든 마지막엔 false
         }
     };
 
@@ -96,11 +98,18 @@ export default function CounselorDashboard() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, selectedRoomId]);
 
+    useEffect(() => {
+        if (selectedRoomId && !room.some(r => r.id === selectedRoomId)) {
+            setSelectedRoomId(null);
+        }
+    }, [room]);
+
     const updateChatStatus = async (chatNo, newStatus) => {
         const rawToken = sessionStorage.getItem("accessToken");
         if (!rawToken) return;
         const token = rawToken.replace(/"/g, '');
 
+        // 백엔드 전송용 데이터
         const updateData = {
             chatNo: chatNo,
             chatStatus: newStatus,
@@ -108,29 +117,80 @@ export default function CounselorDashboard() {
         };
 
         try {
-            const response = await axios.post(`${API_URL}/status`, {
-                method: 'POST',
+            const response = await axios.post(`${API_URL}/status`, updateData, {
                 headers: {
                     'Content-Type': 'application/json',
                     "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify(updateData),
+                }
             });
 
-            if (!response.ok) throw new Error("상태 업데이트 실패");
-
-            fetchChatRooms();
+            // 성공 시 목록 새로고침
+            if (response.status === 200 || response.status === 204) {
+                // await fetchChatRooms();
+            }
         } catch (error) {
-            alert(`상태 변경 실패: ${error.message}`);
+            console.error("오류 발생 줄:", error.config);
+            alert(`상태 변경 실패: ${error.response?.data || error.message}`);
         }
     };
 
+    // const updateChatStatus = async (chatNo, newStatus) => {
+    //     const rawToken = sessionStorage.getItem("accessToken");
+    //     if (!rawToken) return;
+    //     const token = rawToken.replace(/"/g, '');
+
+    //     const updateData = {
+    //         chatNo: chatNo,
+    //         chatStatus: newStatus,
+    //         chatId: newStatus === 'ACTIVE' ? loginId : null,
+    //     };
+
+    //     try {
+    //         const response = await axios.post(`${API_URL}/status`, updateData, {
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //                 "Authorization": `Bearer ${token}`,
+    //             }
+    //         });
+
+    //         // axios는 응답이 성공하면 response.status가 2xx입니다.
+    //         if (response.status === 200 || response.status === 204) {
+    //             console.log("상태 업데이트 성공");
+    //             fetchChatRooms(); // 목록 새로고침
+    //         }
+    //     } catch (error) {
+    //         console.error("상태 변경 오류 상세:", error.response?.data || error.message);
+    //         alert(`상태 변경 실패: ${error.response?.data?.message || "서버 응답 오류"}`);
+    //     }
+    // };
+
     const handleRoomClick = (id) => {
+        const clickedRoom = room.find(r => r.id === id);
+        if (!clickedRoom) return;
+
         setSelectedRoomId(id);
 
-        const room = rooms.find(r => r.id === id);
-        if (room && room.status === 'WAITING') {
+        // setRoom(prev =>
+        //     prev.map(r =>
+        //         r.id === id && r.status === 'WAITING'
+        //             ? { ...r, status: 'ACTIVE', chatId: loginId }
+        //             : r
+        //     )
+        // );
+        if (clickedRoom.status === 'WAITING') {
+            setRoom(prev =>
+                prev.map(r =>
+                    r.id === id
+                        ? { ...r, status: 'ACTIVE', chatId: loginId }
+                        : r
+                )
+            );
             updateChatStatus(id, 'ACTIVE');
+        // const chatRoom = room.find(r => r.id === id);
+        // if (chatRoom && chatRoom.status === 'WAITING') {
+        //     console.log("Updating chat status to ACTIVE for chatNo:", id);
+        //     updateChatStatus(id, 'ACTIVE');
+        // }
         }
     };
 
@@ -164,8 +224,12 @@ export default function CounselorDashboard() {
         }
     };
 
-    const currentRoom = rooms.find(r => r.id === selectedRoomId);
+    const currentRoom = room?.find(r => r.id === selectedRoomId) || null;
     const currentMessages = messages[selectedRoomId] || [];
+
+    // if (selectedRoomId && !currentRoom) {
+    //     return <div style={styles.centerPane}>데이터를 불러오는 중...</div>;
+    // }
 
     const getBadgeStyle = (status) => {
         switch (status) {
@@ -184,24 +248,21 @@ export default function CounselorDashboard() {
             <div style={styles.leftPane}>
                 <div style={styles.paneHeader}>
                     상담 요청 목록
-                    <span style={styles.roomCount}> (총 {rooms.length}건)</span>
+                    <span style={styles.roomCount}> (총 {room.length}건)</span>
                 </div>
 
                 {/* 목록 */}
                 <div style={styles.listContainer}>
-                    {rooms.map(room => {
+                    {room.map(room => {
                         const badge = getBadgeStyle(room.status);
 
                         return (
-                            <div
-                                key={room.id}
-                                onClick={() => handleRoomClick(room.id)}
+                            <div key={room.id} onClick={() => handleRoomClick(room.id)}
                                 style={{
                                     ...styles.roomItem,
                                     backgroundColor: selectedRoomId === room.id ? '#e6f7ff' : 'white',
                                     borderLeft: `4px solid ${badge.color}`,
-                                }}
-                            >
+                                }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold' }}>
                                     {room.userName}
                                     <span style={{
@@ -226,61 +287,96 @@ export default function CounselorDashboard() {
             {/* 중앙 패널 */}
             <div style={styles.centerPane}>
                 {selectedRoomId ? (
-                    <>
-                        <div style={styles.chatHeader}>
-                            <span>{currentRoom.userName}님과의 상담</span>
+                    currentRoom ? (
+                        <>
+                            <div style={styles.chatHeader}>
+                                <span>{currentRoom?.userName}님과의 상담</span>
 
-                            {currentRoom.status === "ACTIVE" && (
-                                <button onClick={handleCloseChat} style={styles.closeButton}>
-                                    상담 종료
-                                </button>
-                            )}
+                                {currentRoom.status === "ACTIVE" && (
+                                    <button onClick={handleCloseChat} style={styles.closeButton}>
+                                        상담 종료
+                                    </button>
+                                )}
 
-                            {currentRoom.status === "CLOSED" && (
-                                <span style={styles.closedBadge}>상담 종료됨</span>
-                            )}
-                        </div>
+                                {currentRoom.status === "CLOSED" && (
+                                    <span style={styles.closedBadge}>상담 종료됨</span>
+                                )}
+                            </div>
 
-                        <div style={styles.messageArea}>
-                            {currentMessages.map((msg, i) => (
-                                <div
-                                    key={i}
-                                    style={{
-                                        ...styles.messageRow,
-                                        justifyContent: msg.sender === 'me' ? 'flex-end' : 'flex-start'
-                                    }}
-                                >
-                                    <div style={{
-                                        ...styles.messageBubble,
-                                        backgroundColor: msg.sender === 'me' ? '#1890ff' : '#f0f0f0',
-                                        color: msg.sender === 'me' ? 'white' : 'black',
-                                    }}>
-                                        {msg.text}
+                            <div style={styles.messageArea}>
+                                {(currentMessages || []).map((msg, i) => (
+                                    <div
+                                        key={i}
+                                        style={{
+                                            ...styles.messageRow,
+                                            justifyContent: msg.sender === 'me' ? 'flex-end' : 'flex-start'
+                                        }}
+                                    >
+                                        <div style={{
+                                            ...styles.messageBubble,
+                                            backgroundColor: msg.sender === 'me' ? '#1890ff' : '#f0f0f0',
+                                            color: msg.sender === 'me' ? 'white' : 'black',
+                                        }}>
+                                            {msg.text}
+                                        </div>
+                                        <span style={styles.timeText}>{msg.time}</span>
                                     </div>
-                                    <span style={styles.timeText}>{msg.time}</span>
-                                </div>
-                            ))}
-                            <div ref={messagesEndRef} />
-                        </div>
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </div>
 
-                        {currentRoom.status === 'ACTIVE' ? (
-                            <div style={styles.inputArea}>
-                                <input
-                                    type="text"
-                                    value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    style={styles.input}
-                                    placeholder="메시지를 입력하세요..."
-                                />
-                                <button style={styles.sendButton} onClick={handleSendMessage}>전송</button>
-                            </div>
-                        ) : (
-                            <div style={styles.inputDisabledArea}>
-                                종료된 상담에는 메시지를 보낼 수 없습니다.
-                            </div>
-                        )}
-                    </>
+                            {/* {currentRoom?.status === 'ACTIVE' ? (
+                                <div style={styles.inputArea}>
+                                    <input
+                                        type="text"
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        style={styles.input}
+                                        placeholder="메시지를 입력하세요..."
+                                    />
+                                    <button style={styles.sendButton} onClick={handleSendMessage}>전송</button>
+                                </div>
+                            ) : (
+                                <div style={styles.inputDisabledArea}>
+                                    종료된 상담에는 메시지를 보낼 수 없습니다.
+                                </div>
+                            )} */}
+                            {currentRoom?.status === 'ACTIVE' && (
+                                <div style={styles.inputArea}>
+                                    <input
+                                        type="text"
+                                        value={inputText}
+                                        onChange={(e) => setInputText(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        style={styles.input}
+                                        placeholder="메시지를 입력하세요..."
+                                    />
+                                    <button style={styles.sendButton} onClick={handleSendMessage}>
+                                        전송
+                                    </button>
+                                </div>
+                            )}
+
+                            {currentRoom?.status === 'WAITING' && (
+                                <div style={styles.inputDisabledArea}>
+                                    상담사가 아직 입장하지 않았습니다.
+                                </div>
+                            )}
+
+                            {currentRoom?.status === 'CLOSED' && (
+                                <div style={styles.inputDisabledArea}>
+                                    종료된 상담입니다.
+                                </div>
+                            )}
+
+                        </>
+                    ) : (
+                        <div style={styles.emptyState}>
+                            <p>채팅 데이터를 불러올 수 없습니다.</p>
+                            <button onClick={fetchChatRooms}>다시 시도</button>
+                        </div>
+                    )
                 ) : (
                     <div style={styles.emptyState}>
                         <h3>상담할 고객을 선택해주세요</h3>
@@ -296,11 +392,11 @@ export default function CounselorDashboard() {
                     <div style={{ padding: '20px' }}>
                         <div style={styles.infoCard}>
                             <strong>회원 정보</strong>
-                            <p>방 번호: {currentRoom.id}</p>
-                            <p>이름: {currentRoom.userName}</p>
-                            <p>등급: {currentRoom.userGrade}</p>
-                            <p>상태: {getBadgeStyle(currentRoom.status).text}</p>
-                            <p>배정 상담사: {currentRoom.chatId || '없음'}</p>
+                            <p>방 번호: {currentRoom?.id}</p>
+                            <p>이름: {currentRoom?.userName}</p>
+                            <p>등급: {currentRoom?.userGrade}</p>
+                            <p>상태: {getBadgeStyle(currentRoom?.status).text}</p>
+                            <p>배정 상담사: {currentRoom?.chatId || '없음'}</p>
                         </div>
 
                         <div style={styles.infoCard}>
@@ -318,7 +414,6 @@ export default function CounselorDashboard() {
     );
 }
 
-// --- [7] 인라인 스타일 객체 (CSS 없이 사용하기 위함) ---
 const styles = {
     container: {
         display: 'flex',
