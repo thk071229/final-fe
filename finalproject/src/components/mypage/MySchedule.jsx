@@ -10,7 +10,7 @@ import { loginIdState } from "../../utils/jotai";
 
 
 export default function MySchedule() {
-   const accountId = useAtomValue(loginIdState);
+  const accountId = useAtomValue(loginIdState);
 
   const today = dayjs();
   const todayStr = today.format("YYYY-MM-DD");

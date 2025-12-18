@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FaTrash, FaUser, FaUserTimes } from "react-icons/fa"; // 회원탈퇴 아이콘 추가
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { AiOutlineSchedule } from "react-icons/ai";
 import { MdPayment } from "react-icons/md";
 import { FaHeart } from "react-icons/fa";
+import axios from "axios";
+import { useAtom, useAtomValue } from "jotai";
+import { accessTokenState, loginCompleteState } from "../../utils/jotai";
 
 // 눈이 편안한 색상 팔레트 정의
 const PALETTE = {
@@ -18,13 +21,9 @@ const PALETTE = {
 };
 
 export default function MyPage() {
-    const location = useLocation();
-    const [activeTab, setActiveTab] = useState(location.pathname);
-
-    useEffect(() => {
-        setActiveTab(location.pathname);
-    }, [location.pathname]);
-
+    // 이동 도구
+    const navigate = useNavigate();
+    const logincomplete = useAtomValue(loginCompleteState);
     // 링크 공통 스타일
     const linkBaseStyle = {
         borderRadius: "12px",
@@ -40,25 +39,72 @@ export default function MyPage() {
         letterSpacing: "-0.3px"
     };
 
+    const location = useLocation();
+    const [activeTab, setActiveTab] = useState(location.pathname);
+    const [profileUrl, setProfileUrl] = useState("/images/default-profile.jpg")
+
+    //state 
+    const [myInfo, setMyinfo] = useState({//백엔드에서 넘겨준 데이터를 state에 저장
+        accountId: "",
+        accountNickname: "",
+        accountEmail: "",
+        accountBirth: "",
+        accountGender: "",
+        accountContact: "",
+        accountLevel: "",
+        attachmentNo: null // 사진 번호 (없으면 null)
+    });
+
+    useEffect(() => {
+        if (logincomplete) {
+            loadData();
+        }
+    }, [logincomplete]);
+
+    useEffect(() => {
+        // 경로가 정확히 '/mypage'일 때만 info로 보냄
+        if (location.pathname === '/mypage' || location.pathname === '/mypage/') {
+            navigate('info', { replace: true });
+        }
+        setActiveTab(location.pathname);
+    }, [location.pathname]);
+
+    // callback
+    const loadData = useCallback(async () => {
+        try {
+            const resp = await axios.get("/account/mypage");
+            setMyinfo(resp.data);
+            if (resp.data.attachmentNo) {
+                setProfileUrl(`http://localhost:8080/attachment/download?attachmentNo=${resp.data.attachmentNo}`);
+            } else {
+                setProfileUrl("/images/default-profile.jpg");
+            }
+        }
+        catch (e) {
+            console.log("정보 불러오기 실패");
+        }
+    }, []);
+
+    // 회원탈퇴 
+    const deleteAccount = useCallback((e)=>{},[]);
 
     return (
         <div className="container-fluid p-0" style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
             <div className="row g-0 h-100">
                 {/* 1. 사이드바 영역 */}
-                <nav className="col-2 d-none d-md-block bg-white d-flex flex-column justify-content-between" 
-                     style={{ minHeight: "100vh", borderRight: `1px solid ${PALETTE.border}`, position: "relative" }}>
-                    
+                <nav className="col-2 d-none d-md-block bg-white d-flex flex-column justify-content-between"
+                    style={{ minHeight: "100vh", borderRight: `1px solid ${PALETTE.border}`, position: "relative" }}>
+
                     {/* 상단 프로필 및 메뉴 */}
                     <div className="pt-5 px-3">
                         {/* 프로필 영역 */}
                         <div className="text-center mb-5">
-                            <div 
-                                className="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" 
-                                style={{ width: "80px", height: "80px", backgroundColor: PALETTE.activeBg, color: PALETTE.activeText }}
-                            >
-                                <FaUser size={32} />
-                            </div>
-                            <h5 className="fw-bold m-0" style={{ color: "#333", fontSize: "1.1rem" }}>이위섭님</h5>
+                            <img src={profileUrl} className="rounded-circle border shadow-sm"
+                                style={{ width: "120px", height: "120px", objectFit: "cover" }}
+                                onError={(e) => {
+                                    e.target.src = "/images/default-profile.jpg"; // 깨짐 방지
+                                }} />
+                            <h5 className="fw-bold m-0 mt-2" style={{ color: "#333", fontSize: "1.1rem" }}>{myInfo.accountNickname}</h5>
                         </div>
 
                         {/* 메뉴 링크들 */}
@@ -72,8 +118,8 @@ export default function MyPage() {
                                 const isActive = activeTab === item.path;
                                 return (
                                     <li className="nav-item" key={item.path}>
-                                        <Link 
-                                            to={item.path} 
+                                        <Link
+                                            to={item.path}
                                             style={{
                                                 ...linkBaseStyle,
                                                 backgroundColor: isActive ? PALETTE.activeBg : "transparent",
@@ -83,7 +129,7 @@ export default function MyPage() {
                                             onMouseEnter={(e) => !isActive && (e.currentTarget.style.backgroundColor = PALETTE.hoverBg)}
                                             onMouseLeave={(e) => !isActive && (e.currentTarget.style.backgroundColor = "transparent")}
                                         >
-                                            <item.icon className="me-3" size={18} style={{ opacity: isActive ? 1 : 0.7 }}/> 
+                                            <item.icon className="me-3" size={18} style={{ opacity: isActive ? 1 : 0.7 }} />
                                             {item.label}
                                         </Link>
                                     </li>
@@ -117,7 +163,7 @@ export default function MyPage() {
                                 e.currentTarget.style.color = PALETTE.dangerText;
                             }}
                             onClick={() => {
-                                if(window.confirm("정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) {
+                                if (window.confirm("정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) {
                                     alert("탈퇴 처리가 진행됩니다.");
                                 }
                             }}
@@ -132,20 +178,21 @@ export default function MyPage() {
                     <div className="container-fluid" style={{ maxWidth: "1100px" }}>
                         <div className="d-flex align-items-center pb-3 mb-4 border-bottom" style={{ borderColor: PALETTE.border }}>
                             <h2 className="h3 fw-bold m-0" style={{ color: "#2c3e50" }}>
-                                {activeTab.includes('info') && "내 정보 수정"}
+                                {activeTab.includes('info') && "내 프로필"}
                                 {activeTab.includes('schedule') && "나의 여행 일정"}
                                 {activeTab.includes('pay') && "결제 내역 확인"}
                                 {activeTab.includes('wishlist') && "내가 찜한 목록"}
                                 {activeTab === '/mypage' && "마이 페이지"}
                             </h2>
                         </div>
-                        
-                        <div className="bg-white rounded-4 p-5" style={{ 
-                            minHeight: "500px", 
-                            boxShadow: "0 2px 12px rgba(0,0,0,0.03)", 
+
+                        <div className="bg-white rounded-4 p-5" style={{
+                            minHeight: "500px",
+                            boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
                             border: `1px solid ${PALETTE.border}`
                         }}>
-                            <Outlet />
+                            <Outlet context={{ myInfo }} />
+
                         </div>
                     </div>
                 </main>

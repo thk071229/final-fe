@@ -176,6 +176,12 @@ export default function Menu() {
                   </Link>
                 </li>
                 <li className="nav-item" onClick={closeMenu}>
+                  <Link className="nav-link" to="/mypage">
+                    <i className="fa-solid fa-right-to-bracket"></i>
+                    <span>마이페이지</span>
+                  </Link>
+                </li>
+                <li className="nav-item" onClick={closeMenu}>
                   <Link className="nav-link" to="#">
                     <i className="fa-solid fa-user-plus"></i>
                     <span>{loginId} ({loginLevel})</span>
