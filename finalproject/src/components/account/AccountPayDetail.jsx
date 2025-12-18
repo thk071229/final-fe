@@ -86,7 +86,14 @@ export default function AccountPayDetail() {
             className="fade-jumbotron"
             style={{ animationDelay: `${0.03}s` }}
         >
-            <Jumbotron subject="결제 상세 정보 조회" detail={`${paymentNo}번 거래 상세 정보 내역 조회`}></Jumbotron>
+            <div className="row">
+                <div className="col">
+                    <h3 className="text-center">카카오페이 결제내역 상세조회</h3>
+                    <p className="text-center text-desc">
+                        카카오페이에서 결제내역을 상세하게 알아봅시다.
+                    </p>
+                </div>
+            </div>
         </div>
 
         <div

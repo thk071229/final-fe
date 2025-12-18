@@ -68,3 +68,7 @@
     transform: translateX(0);
   }
 }
+
+.text-desc {
+  color: #898787;
+}

@@ -50,10 +50,19 @@ export default function AccountPayInformation() {
             className="fade-jumbotron"
             style={{ animationDelay: `${0.03}s` }}
         >
-            <Jumbotron subject="내 카카오페이 결제 내역" detail="카카오페이 결제 내역을 알아봅시다."></Jumbotron>
+            {/* <Jumbotron subject="내 카카오페이 결제 내역" detail="카카오페이 결제 내역을 알아봅시다."></Jumbotron> */}
+
+            <div className="row">
+                <div className="col">
+                    <h3 className="text-center">카카오페이 결제내역 조회</h3>
+                    <p className="text-center text-desc">
+                        카카오페이에서 결제내역을 알아봅시다.
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div
+        {/* <div
             className="fade-link"
             style={{ animationDelay: `${0.03}s` }}
         >
@@ -65,10 +74,11 @@ export default function AccountPayInformation() {
                     <Link to="/" className="none-decortion">홈</Link>
                 </div>
             </div>
-        </div>
+        </div> */}
 
 
-        <hr />
+        <hr  className="mt-5" />
+
         {paymentList.map((payment, i) => (
             <div
                 key={i}
