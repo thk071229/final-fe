@@ -78,7 +78,7 @@ export default function AccountPayDetail() {
     // 환불 가능 여부는 payment_detail은 모르고 payment만 아니 부모가 환불 여부를 결정해준다
     const location = useLocation();
     const { isRefund } = location.state || {};
-    console.log(isRefund);
+    
     //return
     return (<>
 
