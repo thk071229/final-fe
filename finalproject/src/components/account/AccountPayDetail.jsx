@@ -139,19 +139,18 @@ export default function AccountPayDetail() {
                             </div>
                         </div>
 
+                        {/* 오른쪽 버튼 (끝으로 밀기) */}
+                        <div className="ms-auto">
+                            <button className={`btn btn-outline-${payment.paymentRemain !== 0 ? "danger" : "secondary"} ms-3`} onClick={cancelAll}
+                                disabled={isRefund === false || payment.paymentRemain === 0}>
+                                <FaXmark />
+                                <span>전체 환불</span>
+                            </button>
+                        </div>
 
                     </>
 
                 )}
-
-                {/* 오른쪽 버튼 (끝으로 밀기) */}
-                <div className="ms-auto">
-                   <button className={`btn btn-outline-${payment.paymentRemain !== 0 ? "danger" : "secondary"} ms-3`} onClick={cancelAll}
-                                            disabled={isRefund === false || payment.paymentRemain === 0}>
-                                            <FaXmark />
-                                            <span>전체 환불</span>
-                                        </button>
-                </div>
 
             </div>
 
