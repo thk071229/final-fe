@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import "./AccountPay.css";
 import { FaQuestionCircle } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
@@ -75,6 +75,10 @@ export default function AccountPayDetail() {
         loadData();
     }, []);
 
+    // 환불 가능 여부는 payment_detail은 모르고 payment만 아니 부모가 환불 여부를 결정해준다
+    const location = useLocation();
+    const { isRefund } = location.state || {};
+    console.log(isRefund);
     //return
     return (<>
 
@@ -131,7 +135,7 @@ export default function AccountPayDetail() {
                                 {(
                                     <div>
                                         <button className={`btn btn-outline-${payment.paymentRemain !== 0 ? "danger" : "secondary"} ms-3`} onClick={cancelAll}
-                                            disabled={payment.paymentRemain === 0}>
+                                            disabled={isRefund === false || payment.paymentRemain === 0}>
                                             <FaXmark />
                                             <span>전체 환불</span>
                                         </button>
@@ -203,7 +207,7 @@ export default function AccountPayDetail() {
                                             <div className="col">
                                                 <button type="button" className={`btn btn-outline-${paymentDetail.paymentDetailStatus === "승인" ? "danger" : "secondary"}`}
                                                     onClick={e => cancelUnit(paymentDetail)}
-                                                    disabled={paymentDetail.paymentDetailStatus !== "승인"}>
+                                                    disabled={isRefund === false || paymentDetail.paymentDetailStatus !== "승인"}>
                                                     <FaXmark />
                                                     <span className="ms-2">이 아이템 환불</span>
                                                 </button>

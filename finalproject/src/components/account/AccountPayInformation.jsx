@@ -36,6 +36,13 @@ export default function AccountPayInformation() {
         return "결제 부분 취소";
     }, []);
 
+    const checkPaymentRefund = useCallback((paymentTime) => {
+        const base = new Date(paymentTime).getTime();
+        const after3Days = base + 3 * 24 * 60 * 60 * 1000;
+
+        return Date.now() >= after3Days;
+    }, []);
+
     return (<>
 
 
@@ -77,7 +84,7 @@ export default function AccountPayInformation() {
                             <div>거래일시 : {payment.paymentTime}</div>
                             <div>상태 : {calculateStatus(payment)}</div>
                             <div className="mt-2 text-end">
-                                <Link to={`/kakaopay/pay/detail/${payment.paymentNo}`} className="btn btn-outline-info">자세히 보기 <FaArrowRight /></Link>
+                                <Link to={`/kakaopay/pay/detail/${payment.paymentNo}`} state={{ isRefund: checkPaymentRefund(payment.paymentTime) }} className="btn btn-outline-info">자세히 보기 <FaArrowRight /></Link>
                                 {/* /kakaopay/pay/detail */}
                             </div>
                         </div>
