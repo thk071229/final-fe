@@ -61,7 +61,6 @@ export const Marker = memo(function Marker({
                         <div className="mt-1">
                             {/* 실제 값 표시 */}
                             <span>{duration?.next}초</span>
-                            {/* "소요시간" 레이블은 외부 컴포넌트(MarkerListSection)에서 Day 구분자 아래에 배치되는 것이 일반적입니다. */}
                         </div>
                     )}
                     

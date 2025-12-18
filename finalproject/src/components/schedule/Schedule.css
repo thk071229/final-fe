@@ -1,7 +1,7 @@
 
 .map-area{
     position: relative;
-    height: 800px;
+    height: 100%;
     background-color: lightblue;
 }
 
@@ -29,7 +29,7 @@
   position: absolute;
   top: 10px;
   left: 10px;
-  width: 260px;
+  width: 340px;
   background: white;
   border-radius: 10px;
   padding: 10px;
@@ -184,18 +184,6 @@ border: 2px solid #dee2e6;
     top: 0;
     z-index: 10;
     background: white;
-}
-
-/* 마커 간의 연결 느낌을 주려면 */
-.marker-list-inner::before {
-    content: "";
-    position: absolute;
-    left: 25px; /* Marker의 순서 badge 위치에 맞춰 조정 */
-    top: 60px;
-    bottom: 0;
-    width: 2px;
-    background: #e9ecef;
-    z-index: -1;
 }
 
 .all-schedule-container, .search-results {

@@ -6,7 +6,7 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
     // id로 마커 찾기
     const findMarker = useCallback((id) => {
         const index = markerIds.indexOf(id);
-        return { id, index};
+        return { id, index };
     }, [markerIds]);
 
     const moveMarker = useCallback((id, atIndex) => {
@@ -36,28 +36,28 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
                         };
                     }
                 });
-                    
+
                 return newMarkerData;
             });
 
             return {
                 ...prev,
-                [selectedDay] : {
+                [selectedDay]: {
                     ...prev[selectedDay],
-                    markerIds : updated
+                    markerIds: updated
                 }
             };
         });
     }, [setMarkerData, setDays, selectedDay]);
 
     const changeStrValue = useCallback((e, id) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         // console.log(`name = ${name} || value = ${value} || id = ${id}`);
-        setMarkerData(prev =>({
+        setMarkerData(prev => ({
             ...prev,
-            [id] : {
+            [id]: {
                 ...prev[id],
-                [name] : value
+                [name]: value
             }
         }));
     }, [])
@@ -72,14 +72,23 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
         const nextKey = nextId ? `${id}##${nextId}` : null;
 
         const durationForMarker = {
-            prev: prevKey ? routes.find(route => route.routeKey === prevKey)?.duration : null,
-            next: nextKey ? routes.find(route => route.routeKey === nextKey)?.duration : null,
+            prev: prevKey
+                ? routes.find(route => route.routeKey === prevKey && selectedType[route.priority])?.duration
+                : null,
+            next: nextKey
+                ? routes.find(route => route.routeKey === nextKey && selectedType[route.priority])?.duration
+                : null,
         };
+
         const distanceForMarker = {
-            prev: prevKey ? routes.find(route => route.routeKey === prevKey)?.distance : null,
-            next: nextKey ? routes.find(route => route.routeKey === nextKey)?.distance : null,
+            prev: prevKey
+                ? routes.find(route => route.routeKey === prevKey && selectedType[route.priority])?.distance
+                : null,
+            next: nextKey
+                ? routes.find(route => route.routeKey === nextKey && selectedType[route.priority])?.distance
+                : null,
         };
-        return ( <Marker
+        return (<Marker
             key={id}
             id={`${id}`}
             markerData={markerData[id]}
@@ -87,10 +96,11 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
             distance={distanceForMarker}
             moveMarker={moveMarker}
             findMarker={findMarker}
-            onRemove={() => removeMarker(id)}
+            onRemove={() => removeMarker(selectedDay, id)}
             changeStrValue={(e) => changeStrValue(e, id)}
         />
-    )});
+        )
+    });
 
     return (
         <div className="marker-list-inner">

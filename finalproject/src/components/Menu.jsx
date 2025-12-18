@@ -289,7 +289,7 @@ export default function Menu() {
                     .slice(0, 5); //카테고리당 5개만
                   return (
                     <>
-                      <div className=" mt-2" key={category}>
+                      <div className=" mt-2" key={index}>
                         <label className="form-label"
                           name="tagCategory" >{category}</label>
                       </div>

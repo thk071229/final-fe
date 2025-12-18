@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
 import KakaoLoader from "./useKakaoLoader";
-import {v4 as uuidv4} from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 import "./KakaoMapTest.css";
 import axios from "axios";
@@ -15,8 +15,8 @@ export default function KakaoMapTest() {
 
     const [days, setDays] = useState({
         1: {
-            markerIds : [ /* uuid1, uuid2 */],
-            routes : [
+            markerIds: [ /* uuid1, uuid2 */],
+            routes: [
                 /*
                 {
                         routeKey : uuid1##uuid2,
@@ -54,9 +54,9 @@ export default function KakaoMapTest() {
     const [selectedDay, setSelectedDay] = useState(1)
     const [polyline, setPolyLine] = useState([]);
     const [selectedType, setSelectedType] = useState({
-        RECOMMEND : true,
-        TIME : false,
-        DISTANCE : false
+        RECOMMEND: true,
+        TIME: false,
+        DISTANCE: false
     })
     const [selectedSearch, setSelectedSearch] = useState("CAR")
 
@@ -66,7 +66,7 @@ export default function KakaoMapTest() {
     })
 
     const [searchData, setSearchKeyword] = useState({
-        query : ""
+        query: ""
     })
 
     const [searchList, setSearchList] = useState([
@@ -109,22 +109,22 @@ export default function KakaoMapTest() {
             x: latlng.getLng(),
             y: latlng.getLat(),
         }
-        
-        const {data} = await axios.post("/kakaoMap/getAddress", address);
-        const addressName = data.documents.map(({address, road_address}) => {
-            if(road_address === null){
+
+        const { data } = await axios.post("/kakaoMap/getAddress", address);
+        const addressName = data.documents.map(({ address, road_address }) => {
+            if (road_address === null) {
                 return address.address_name;
             }
-            if(road_address.building_name.length !== 0){
+            if (road_address.building_name.length !== 0) {
                 return road_address.building_name
             }
-            if(road_address.road_name.length !== 0){
+            if (road_address.road_name.length !== 0) {
                 return road_address.road_name
             }
-            if(road_address.address_name.length !== 0){
+            if (road_address.address_name.length !== 0) {
                 return road_address.address_name
             }
-                
+
         })
 
         // 1. setDays를 먼저 실행하여 새로운 markerIds의 길이를 확정하고,
@@ -145,9 +145,9 @@ export default function KakaoMapTest() {
         //    (setDays 호출 직후 newMarkerNo가 업데이트 되므로 사용 가능)
         setMarkerData(prev => ({
             ...prev,
-            [id]: { 
+            [id]: {
                 no: markerNo, // setDays에서 계산된 정확한 순서
-                ...address, 
+                ...address,
                 name: addressName[0],
                 content: "메모영역"
             }
@@ -155,10 +155,10 @@ export default function KakaoMapTest() {
     }, [days, selectedDay, searchList]);
 
     // 주소 검색
-    const addMarkerForSearch = useCallback(async (e)=>{
+    const addMarkerForSearch = useCallback(async (e) => {
         setSearchList([]);
         console.log("addMarkerForSearch 실행");
-        const {data} = await axios.post("/kakaoMap/searchAddress", searchData);
+        const { data } = await axios.post("/kakaoMap/searchAddress", searchData);
         // const {documents} = data;
         // console.log(data);
         data.map(element => {
@@ -166,14 +166,14 @@ export default function KakaoMapTest() {
             setSearchList(prev => ([
                 ...prev,
                 {
-                    addressName : element.address_name,
-                    categoryGroupName : element.category_group_name,
-                    phone : element.phone,
-                    placeName : element.place_name,
-                    placeUrl : element.place_url,
-                    roadAddressName : element.road_address_name,
-                    x : element.x,
-                    y : element.y
+                    addressName: element.address_name,
+                    categoryGroupName: element.category_group_name,
+                    phone: element.phone,
+                    placeName: element.place_name,
+                    placeUrl: element.place_url,
+                    roadAddressName: element.road_address_name,
+                    x: element.x,
+                    y: element.y
                 }
             ]))
         })
@@ -183,7 +183,7 @@ export default function KakaoMapTest() {
     const removeMarker = useCallback((id) => {
         const currentMarkerIds = days[selectedDay]?.markerIds || [];
         const updatedMarkerIds = currentMarkerIds.filter(markerId => markerId !== id);
-        
+
         // 이 시점에 updatedMarkerIds는 삭제된 ID가 제거된 새로운 ID 목록입니다.
 
         setDays(prevDays => {
@@ -191,16 +191,16 @@ export default function KakaoMapTest() {
             if (!currentDay) return prevDays;
 
             // 1-1. markerIds 배열에서 ID 제거는 이미 위에서 필터링된 updatedMarkerIds 사용
-            
+
             // 1-2. routes 배열 정리 (가장 중요한 부분)
             // routes 배열의 각 segment는 routeKey (예: "uuidA-uuidB")를 가지고 있습니다.
             const updatedRoutes = (currentDay.routes || []).filter(segment => {
                 const { routeKey } = segment;
-                
+
                 // 삭제하려는 마커 ID가 routeKey의 시작점 또는 끝점인지 확인합니다.
                 // 1. key.startsWith(id + '##') : 이 경로의 시작 마커가 삭제될 마커인 경우
                 // 2. key.endsWith('##' + id)   : 이 경로의 끝 마커가 삭제될 마커인 경우
-                
+
                 // 해당 segment가 삭제된 마커 ID를 포함하고 있으면 (true) -> 필터링에서 제외(false)
                 if (routeKey.startsWith(id + '##') || routeKey.endsWith('##' + id)) {
                     return false; // 이 경로는 제거
@@ -243,68 +243,68 @@ export default function KakaoMapTest() {
             return newMarkerData;
         });
 
-    }, [days, selectedDay, setDays, setMarkerData]); 
+    }, [days, selectedDay, setDays, setMarkerData]);
 
-    const markerElements = useCallback(e=>{
+    const markerElements = useCallback(e => {
         return (days[selectedDay].markerIds?.map(id => (
-        <MapMarker
-            key={id}
-            position={{ lng: markerData[id].x, lat: markerData[id].y  }}
-            image={
-                {
-                    src:'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png',
-                    size: {
-                        width: 36,
-                        height: 37
-                    },
-                    options: {
-                        offset: {
-                            x: 13,
-                            y: 37
-                        },
-                        spriteOrigin: {
-                            x: 0,
-                            y: (markerData[id].no-1)*46+10
-                        },
-                        spriteSize : {
+            <MapMarker
+                key={id}
+                position={{ lng: markerData[id].x, lat: markerData[id].y }}
+                image={
+                    {
+                        src: 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png',
+                        size: {
                             width: 36,
-                            height: 691
+                            height: 37
+                        },
+                        options: {
+                            offset: {
+                                x: 13,
+                                y: 37
+                            },
+                            spriteOrigin: {
+                                x: 0,
+                                y: (markerData[id].no - 1) * 46 + 10
+                            },
+                            spriteSize: {
+                                width: 36,
+                                height: 691
+                            }
                         }
-                    }
 
+                    }
                 }
-            }
-        />
+            />
         )));
     }, [markerData, selectedDay, days]);
 
-    const tempMarkerElements = useCallback(e=>{
+    const tempMarkerElements = useCallback(e => {
         const handleMarkerClick = (clickedMarker) => {
-        // 1. addMarker 함수 호출을 위한 customLatLng 객체 생성
-        const customLatLng = {
-            getLat: () => parseFloat(clickedMarker.y),
-            getLng: () => parseFloat(clickedMarker.x)
+            // 1. addMarker 함수 호출을 위한 customLatLng 객체 생성
+            const customLatLng = {
+                getLat: () => parseFloat(clickedMarker.y),
+                getLng: () => parseFloat(clickedMarker.x)
+            };
+
+            // 2. tempMarker 목록에서 클릭된 마커를 제거
+            setTempMarker(prevTempMarkers => {
+                // 클릭된 마커(clickedMarker)와 x, y 좌표가 모두 일치하지 않는
+                // 마커들만 필터링하여 새로운 배열을 만듭니다.
+                const newTempMarkers = prevTempMarkers.filter(
+                    (marker) => !(marker.x === clickedMarker.x && marker.y === clickedMarker.y)
+                );
+                return newTempMarkers;
+            });
+
+            // 3. addMarker 함수 호출 (주요 로직 수행)
+            return addMarker(customLatLng);
         };
-
-        // 2. tempMarker 목록에서 클릭된 마커를 제거
-        setTempMarker(prevTempMarkers => {
-            // 클릭된 마커(clickedMarker)와 x, y 좌표가 모두 일치하지 않는
-            // 마커들만 필터링하여 새로운 배열을 만듭니다.
-            const newTempMarkers = prevTempMarkers.filter(
-                (marker) => !(marker.x === clickedMarker.x && marker.y === clickedMarker.y)
-            );
-            return newTempMarkers;
-        });
-
-        // 3. addMarker 함수 호출 (주요 로직 수행)
-        return addMarker(customLatLng);
-    };
         return (tempMarker?.map((marker, index) => (
-        <MapMarker
-            key={index}
-            position={{ lng: marker.x, lat: marker.y  }}
-            onClick={e=>handleMarkerClick(marker)}
-        />
+            <MapMarker
+                key={index}
+                position={{ lng: marker.x, lat: marker.y }}
+                onClick={e => handleMarkerClick(marker)}
+            />
         )));
     }, [tempMarker, markerData]);
 
@@ -326,68 +326,68 @@ export default function KakaoMapTest() {
                         strokeWeight={5}
                         strokeOpacity={0.7}
                         strokeStyle="solid"
-                        strokeColor={selectedType[pl.priority]? PRIORITY_COLORS[pl.priority]:"#4e4e4e"} 
-                        zIndex={selectedType[pl.priority]? 10:1}
+                        strokeColor={selectedType[pl.priority] ? PRIORITY_COLORS[pl.priority] : "#4e4e4e"}
+                        zIndex={selectedType[pl.priority] ? 10 : 1}
                     />
                 ))
         );
-        
+
     }, [polyline, selectedType, selectedSearch]); // polyline이 업데이트되면 렌더링
 
-    
+
 
     const handleSearchCarRoute = useCallback(async (e) => {
-        if(days[selectedDay]?.markerIds.length <= 1) return;
+        if (days[selectedDay]?.markerIds.length <= 1) return;
         const priorities = ["RECOMMEND", "TIME", "DISTANCE"];
-        if(days[selectedDay]?.markerIds.length === 2) {
+        if (days[selectedDay]?.markerIds.length === 2) {
             const selectedDayMarkerData = days[selectedDay]?.markerIds.map(id => markerData[id]);
             const results = await Promise.all(
-                priorities.map(priority =>{
+                priorities.map(priority => {
                     return axios.post(`/kakaoMap/search?priority=${priority}`, Object.values(selectedDayMarkerData))
                 })
             );
             const newRoutes = [];
-            
+
             results.forEach(result => {
-            const { summary, sections } = result.data.routes[0];
-            const priority = summary.priority || "RECOMMEND"; // 경로 타입 (priority) 추출
+                const { summary, sections } = result.data.routes[0];
+                const priority = summary.priority || "RECOMMEND"; // 경로 타입 (priority) 추출
 
-            // sections는 경로를 구성하는 개별 구간 (Segment) 배열입니다.
-            sections.forEach(section => {
-                const { roads, duration, distance } = section;
-                
-                const startId = days[selectedDay].markerIds[0]; // 마커 ID
-                const endId = days[selectedDay].markerIds[1]; // 마커 ID
-                const routeKey = `${startId}##${endId}`;
+                // sections는 경로를 구성하는 개별 구간 (Segment) 배열입니다.
+                sections.forEach(section => {
+                    const { roads, duration, distance } = section;
 
-                // Polyline 좌표 데이터 생성
-                const linepath = [];
-                roads.forEach(({ vertexes }) => {
-                    for (let i = 0; i < vertexes.length; i += 2) {
-                        linepath.push({ lng: vertexes[i], lat: vertexes[i + 1] });
-                    }
+                    const startId = days[selectedDay].markerIds[0]; // 마커 ID
+                    const endId = days[selectedDay].markerIds[1]; // 마커 ID
+                    const routeKey = `${startId}##${endId}`;
+
+                    // Polyline 좌표 데이터 생성
+                    const linepath = [];
+                    roads.forEach(({ vertexes }) => {
+                        for (let i = 0; i < vertexes.length; i += 2) {
+                            linepath.push({ lng: vertexes[i], lat: vertexes[i + 1] });
+                        }
+                    });
+
+                    // 4. 단일 경로 세그먼트 객체 (RouteSegmentDto와 매핑) 생성
+                    const routeSegment = {
+                        routeKey: routeKey,
+                        priority: priority,
+                        distance: distance,
+                        duration: duration,
+                        linepath: linepath,
+                        type: "CAR",
+                    };
+                    console.log(routeSegment);
+                    newRoutes.push(routeSegment);
                 });
 
-                // 4. 단일 경로 세그먼트 객체 (RouteSegmentDto와 매핑) 생성
-                const routeSegment = {
-                    routeKey: routeKey,
-                    priority: priority,
-                    distance: distance,
-                    duration: duration,
-                    linepath: linepath,
-                    type: "CAR",
-                };
-                console.log(routeSegment);
-                newRoutes.push(routeSegment);
             });
-            
-        });
 
-        // 5. State 업데이트 (한 번만 호출)
-        setDays(prevDays => {
+            // 5. State 업데이트 (한 번만 호출)
+            setDays(prevDays => {
                 // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
                 const existingRoutes = prevDays[selectedDay]?.routes || [];
-                
+
                 // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
                 const newRouteKeys = new Set(newRoutes.map(route => route.type));
 
@@ -412,32 +412,32 @@ export default function KakaoMapTest() {
         } else {
             const selectedDayMarkerData = days[selectedDay]?.markerIds.map(id => markerData[id]);
 
-            const {data} = await axios.post("/kakaoMap/searchAll", Object.values(selectedDayMarkerData));
-            const {summary, sections} = data.routes[0];
-            
-            const {priority} = summary;
+            const { data } = await axios.post("/kakaoMap/searchAll", Object.values(selectedDayMarkerData));
+            const { summary, sections } = data.routes[0];
+
+            const { priority } = summary;
             const newRoutes = [];
 
-            sections.map(({roads, duration, distance}, index) => {
+            sections.map(({ roads, duration, distance }, index) => {
                 const fromId = days[selectedDay].markerIds[index];
-                const toId = days[selectedDay].markerIds[index+1];
+                const toId = days[selectedDay].markerIds[index + 1];
                 const key = `${fromId}##${toId}`;
 
                 const linepath = [];
-                roads.forEach(({vertexes}) => {
-                    for (let i = 0; i < vertexes.length; i += 2){
-                        linepath.push({lng : vertexes[i], lat : vertexes[i+1]});
+                roads.forEach(({ vertexes }) => {
+                    for (let i = 0; i < vertexes.length; i += 2) {
+                        linepath.push({ lng: vertexes[i], lat: vertexes[i + 1] });
                     }
                 });
                 const routeSegment = {
-                    routeKey : key,
-                    priority : priority,
-                    distance : distance,
-                    duration : duration,
-                    linepath : linepath,
-                    type : "CAR",
+                    routeKey: key,
+                    priority: priority,
+                    distance: distance,
+                    duration: duration,
+                    linepath: linepath,
+                    type: "CAR",
                 };
-                
+
                 newRoutes.push(routeSegment);
 
 
@@ -445,7 +445,7 @@ export default function KakaoMapTest() {
             setDays(prevDays => {
                 // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
                 const existingRoutes = prevDays[selectedDay]?.routes || [];
-                
+
                 // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
                 const newRouteKeys = new Set(newRoutes.map(route => route.type));
 
@@ -470,9 +470,9 @@ export default function KakaoMapTest() {
     }, [days, selectedDay])
 
     const handleSearchWalkRoute = useCallback(async (e) => {
-        if(days[selectedDay]?.markerIds.length <= 1) return;
+        if (days[selectedDay]?.markerIds.length <= 1) return;
         const priorities = ["RECOMMEND", "TIME", "DISTANCE"];
-        if(days[selectedDay]?.markerIds.length === 2) {
+        if (days[selectedDay]?.markerIds.length === 2) {
             const selectedDayMarkerData = days[selectedDay].markerIds.map(id => markerData[id]);
             // const results = await Promise.all(
             //     priorities.map(priority =>{
@@ -496,7 +496,7 @@ export default function KakaoMapTest() {
                 duration: data.duration[0], // 해당 구간의 시간
                 linepath: data.linepath[0], // 해당 구간의 경로
                 priority: data.priority, // 전체 경로의 우선순위는 동일
-                type : data.type,
+                type: data.type,
             };
             console.log(routeSegment);
 
@@ -506,7 +506,7 @@ export default function KakaoMapTest() {
             setDays(prevDays => {
                 // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
                 const existingRoutes = prevDays[selectedDay]?.routes || [];
-                
+
                 // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
                 const newRouteKeys = new Set(newRoutes.map(route => route.type));
 
@@ -531,24 +531,24 @@ export default function KakaoMapTest() {
         } else {
             const selectedDayMarkerData = days[selectedDay]?.markerIds.map(id => markerData[id]);
 
-            const {data} = await axios.post(`/kakaoMap/searchForWalk?priority=${priorities[0]}`, Object.values(selectedDayMarkerData));
+            const { data } = await axios.post(`/kakaoMap/searchForWalk?priority=${priorities[0]}`, Object.values(selectedDayMarkerData));
             console.log(data);
             const newRoutes = [];
             // distance 배열의 길이만큼 반복
             data.distance.forEach((distance, index) => {
                 const startId = days[selectedDay].markerIds[index]; // 마커 ID
-                const endId = days[selectedDay].markerIds[index+1]; // 마커 ID
+                const endId = days[selectedDay].markerIds[index + 1]; // 마커 ID
                 const routeKey = `${startId}##${endId}`;
-                
+
                 const routeSegment = {
                     routeKey: routeKey,
                     distance: distance, // 해당 구간의 거리
                     duration: data.duration[index], // 해당 구간의 시간
                     linepath: data.linepath[index], // 해당 구간의 경로
                     priority: data.priority, // 전체 경로의 우선순위는 동일
-                    type : data.type,
+                    type: data.type,
                 };
-                
+
                 newRoutes.push(routeSegment);
             });
             console.log(newRoutes);
@@ -556,7 +556,7 @@ export default function KakaoMapTest() {
             setDays(prevDays => {
                 // 1. 현재 선택된 날짜의 기존 경로 (없으면 빈 배열)
                 const existingRoutes = prevDays[selectedDay]?.routes || [];
-                
+
                 // 2. newRoutes에 포함된 type들을 Set으로 만들어 빠른 조회를 준비합니다.
                 const newRouteKeys = new Set(newRoutes.map(route => route.type));
 
@@ -588,37 +588,140 @@ export default function KakaoMapTest() {
     }, [selectedSearch, handleSearchCarRoute, handleSearchWalkRoute])
 
     const selectType = useCallback(e => {
-        const {name} = e.target;
+        const { name } = e.target;
         setSelectedType(prev => ({
-            [name] : true
+            [name]: true
         }))
     }, [])
 
     const selectSearch = useCallback(e => {
-        const {name} = e.target;
+        const { name } = e.target;
         setSelectedSearch(name)
     }, [])
 
-    const addDays = useCallback(e=>{
+    const addDays = useCallback(e => {
         setDays(prev => ({
             ...prev,
-            [Object.keys(prev).length + 1] : {
-                markerIds : [],
+            [Object.keys(prev).length + 1]: {
+                markerIds: [],
                 routes: []
-            }   
+            }
         }));
-        setSelectedDay(selectedDay+1);
+        setSelectedDay(selectedDay + 1);
     }, [selectedDay]);
 
-    const sendData = useCallback(async (e)=>{
-        const {data} = await axios.post("/kakaoMap/insertData", {data : {days: days, markerData: markerData}})
+    const sendData = useCallback(async (e) => {
+        const { data } = await axios.post("/kakaoMap/insertData", { data: { days: days, markerData: markerData } })
         console.log(data);
     }, [days, markerData])
 
     const changeStrValue = useCallback((e) => {
-        const {name, value} = e.target;
+        const { name, value } = e.target;
         setSearchKeyword(prev => ({ ...prev, [name]: value }));
     }, [])
+
+    const parseVertexes = (roads) => {
+        const linepath = [];
+        roads.forEach(({ vertexes }) => {
+            for (let i = 0; i < vertexes.length; i += 2) {
+                linepath.push({ lng: vertexes[i], lat: vertexes[i + 1] });
+            }
+        });
+        return linepath;
+    }
+
+    const handleSearchRoutes = useCallback(async (day = null) => {
+        // 1. 대상 날짜 결정 (인자가 있으면 [day], 없으면 모든 날짜 키)
+        const targetDayKeys = day ? [day] : Object.keys(days);
+
+        // 유효한 날짜(마커가 2개 이상인 날짜)만 필터링
+        const validDayKeys = targetDayKeys.filter(key => days[key]?.markerIds.length >= 2);
+
+        if (validDayKeys.length === 0) return;
+
+        const modes = ["CAR", "WALK"];
+        const priorities = ["RECOMMEND", "TIME", "DISTANCE"];
+        const requests = [];
+
+        // 2. 모든 대상 날짜 x 모드 x 우선순위 조합으로 요청 생성
+        validDayKeys.forEach(dayKey => {
+            const markerIds = days[dayKey].markerIds;
+            const markerValues = markerIds.map(id => markerData[id]);
+
+            modes.forEach(mode => {
+                const isCar = mode === "CAR";
+                const baseUrl = isCar
+                    ? (markerIds.length === 2 ? "/kakaoMap/search" : "/kakaoMap/searchAll")
+                    : "/kakaoMap/searchForWalk";
+
+                priorities.forEach(priority => {
+                    requests.push({
+                        dayKey, // 나중에 업데이트할 때 필요
+                        mode,
+                        priority,
+                        promise: axios.post(`${baseUrl}?priority=${priority}`, markerValues)
+                    });
+                });
+            });
+        });
+
+        try {
+            // 3. 병렬 실행
+            const responses = await Promise.all(requests.map(r => r.promise));
+
+            // 4. 날짜별로 결과 임시 저장소 생성
+            // 예: { "1": [], "2": [] }
+            const newRoutesByDay = {};
+            validDayKeys.forEach(k => { newRoutesByDay[k] = []; });
+
+            // 5. 응답 결과 정제 및 분류
+            responses.forEach((res, index) => {
+                const { dayKey, mode, priority } = requests[index];
+                const data = res.data;
+                const currentMarkerIds = days[dayKey].markerIds;
+
+                if (mode === "CAR") {
+                    const { summary, sections } = data.routes[0];
+                    sections.forEach((section, idx) => {
+                        newRoutesByDay[dayKey].push({
+                            routeKey: `${currentMarkerIds[idx]}##${currentMarkerIds[idx + 1]}`,
+                            priority: summary.priority || priority,
+                            distance: section.distance,
+                            duration: section.duration,
+                            linepath: parseVertexes(section.roads),
+                            type: "CAR",
+                        });
+                    });
+                } else {
+                    data.distance.forEach((dist, idx) => {
+                        newRoutesByDay[dayKey].push({
+                            routeKey: `${currentMarkerIds[idx]}##${currentMarkerIds[idx + 1]}`,
+                            priority: data.priority || priority,
+                            distance: dist,
+                            duration: data.duration[idx],
+                            linepath: data.linepath[idx],
+                            type: "WALK",
+                        });
+                    });
+                }
+            });
+
+            // 6. 상태 업데이트 (여러 날짜를 한꺼번에 업데이트)
+            setDays(prev => {
+                const next = { ...prev };
+                validDayKeys.forEach(dayKey => {
+                    next[dayKey] = {
+                        ...prev[dayKey],
+                        routes: newRoutesByDay[dayKey] // 해당 날짜의 6가지 경로 조합 교체
+                    };
+                });
+                return next;
+            });
+
+        } catch (err) {
+            console.error("통합 경로 검색 중 오류 발생:", err);
+        }
+    }, [days, markerData]);
 
     // polyline을 가져와서 사용하기 위한 Effect
     useEffect(() => {
@@ -630,8 +733,8 @@ export default function KakaoMapTest() {
         }
 
         const linesToRender = routes.map(segment => {
-        // segment: { routeKey: "uuid1-uuid2", priority: "RECOMMEND", linepath: [...], type:"WALK?CAR" }
-        
+            // segment: { routeKey: "uuid1-uuid2", priority: "RECOMMEND", linepath: [...], type:"WALK?CAR" }
+
             // linepath가 빈 배열이 아닌지 확인해야 합니다.
             if (!segment.linepath || segment.linepath.length === 0) {
                 console.warn(`[Day ${selectedDay}] priority: ${segment.priority}의 linepath가 비어있습니다.`);
@@ -648,29 +751,29 @@ export default function KakaoMapTest() {
 
         // 3. PolyLine 상태 갱신
         setPolyLine(linesToRender);
-        
+
         // selectedDay나 days가 바뀔 때마다 실행되어 polyline을 갱신합니다.
     }, [selectedDay, days, setPolyLine, selectedSearch]);
 
 
 
     return (
-        <>            
+        <>
             <div className="map-wrapper">
                 <Map
-                className="map-info"
-                center={center}
-                level={3}
-                onClick={(_, mouseEvent) => {
-                    addMarker(mouseEvent.latLng);
-                }}
+                    className="map-info"
+                    center={center}
+                    level={3}
+                    onClick={(_, mouseEvent) => {
+                        addMarker(mouseEvent.latLng);
+                    }}
                 >
 
-                {markerElements()}
-                {tempMarkerElements()}
-                {polylineElements()}
+                    {markerElements()}
+                    {tempMarkerElements()}
+                    {polylineElements()}
                 </Map>
-                <div className="marker-list">
+                {/* <div className="marker-list">
                     <h4 className="text-center">Marker List</h4>
                     <div className="row day-line">
                         <div className="col d-flex add-day">
@@ -702,48 +805,49 @@ export default function KakaoMapTest() {
                             removeMarker={removeMarker}
                         />
                     </DndProvider>
-                </div>
+                </div> */}
             </div>
             <div className="row mt-4">
                 <div className="col">
-                    <button type="button" className="btn btn-secondary"  onClick={searchAllRoot}>테스트 조회용</button>
-                    <button type="button" className={`btn ${selectedSearch === "CAR"? "btn-success":"btn-secondary"} ms-1`} name="CAR" onClick={selectSearch}>자동차</button>
-                    <button type="button" className={`btn ${selectedSearch === "WALK"? "btn-success":"btn-secondary"} ms-1`} name="WALK" onClick={selectSearch}>도보</button>
+                    <button type="button" className="btn btn-secondary" onClick={searchAllRoot}>테스트 조회용</button>
+                    <button type="button" className="btn btn-secondary" onClick={e => { handleSearchRoutes(selectedDay) }}>테스트 조회용2</button>
+                    <button type="button" className={`btn ${selectedSearch === "CAR" ? "btn-success" : "btn-secondary"} ms-1`} name="CAR" onClick={selectSearch}>자동차</button>
+                    <button type="button" className={`btn ${selectedSearch === "WALK" ? "btn-success" : "btn-secondary"} ms-1`} name="WALK" onClick={selectSearch}>도보</button>
                 </div>
                 <div className="col">
-                    <button type="button" className={`btn ${selectedType?.RECOMMEND? "btn-success":"btn-secondary"} ms-1`} name="RECOMMEND" onClick={selectType}>추천경로</button>
-                    <button type="button" className={`btn ${selectedType?.TIME? "btn-success":"btn-secondary"} ms-1`} name="TIME" onClick={selectType}>최단시간</button>
-                    <button type="button" className={`btn ${selectedType?.DISTANCE? "btn-success":"btn-secondary"} ms-1`} name="DISTANCE" onClick={selectType}>최단길이</button>
+                    <button type="button" className={`btn ${selectedType?.RECOMMEND ? "btn-success" : "btn-secondary"} ms-1`} name="RECOMMEND" onClick={selectType}>추천경로</button>
+                    <button type="button" className={`btn ${selectedType?.TIME ? "btn-success" : "btn-secondary"} ms-1`} name="TIME" onClick={selectType}>최단시간</button>
+                    <button type="button" className={`btn ${selectedType?.DISTANCE ? "btn-success" : "btn-secondary"} ms-1`} name="DISTANCE" onClick={selectType}>최단길이</button>
                     <button type="button" className={`btn btn-secondary ms-1`} onClick={sendData}>데이터 전송</button>
                 </div>
                 <div className="row mt-2">
                     <label className="col-sm-3 col-form-label">
                         <span>주소</span>
-                    </label>    
+                    </label>
                     <div className="col-sm-9 d-flex">
-                        <input className="form-control flex-grow-1 w-auto" name="query" value={searchData.query} onChange={changeStrValue}/>
+                        <input className="form-control flex-grow-1 w-auto" name="query" value={searchData.query} onChange={changeStrValue} />
                         <button className="btn btn-secondary" onClick={addMarkerForSearch}>검색</button>
                     </div>
                 </div>
-                {searchList?.map((list,index) => {
+                {searchList?.map((list, index) => {
                     const customLatLng = {
-                            getLat: () => parseFloat(list.y),
-                            getLng: () => parseFloat(list.x)
-                        };
+                        getLat: () => parseFloat(list.y),
+                        getLng: () => parseFloat(list.x)
+                    };
                     return (
-                    <div className="row mt-1 border shadow" key={index}>
-                        <div className="col" onClick={() => addTempMarker(customLatLng)}>
-                            <p>매장명 : {list.placeName}</p>
-                            <p>주소 : {list.addressName}</p>
-                            <p>도로명 주소 : {list.roadAddressName}</p>
-                            <p>업종 : {list.categoryGroupName}</p>
-                            <p>전화번호 : {list.phone}</p>
-                            <p>매장 홈페이지 : {list.placeUrl}</p>
+                        <div className="row mt-1 border shadow" key={index}>
+                            <div className="col" onClick={() => addTempMarker(customLatLng)}>
+                                <p>매장명 : {list.placeName}</p>
+                                <p>주소 : {list.addressName}</p>
+                                <p>도로명 주소 : {list.roadAddressName}</p>
+                                <p>업종 : {list.categoryGroupName}</p>
+                                <p>전화번호 : {list.phone}</p>
+                                <p>매장 홈페이지 : {list.placeUrl}</p>
+                            </div>
                         </div>
-                    </div>
                     )
-                    }
-                )} 
+                }
+                )}
             </div>
         </>
     )

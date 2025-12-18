@@ -34,6 +34,7 @@ import MyInformation from "./mypage/MyInformation";
 import MyPayment from "./mypage/MyPayment";
 import MySchedule from "./mypage/MySchedule";
 import MyWishList from "./mypage/MyWishList";
+import Private from "./guard/Private";
 
 
 
@@ -78,10 +79,10 @@ export default function Content() {
                     {/* 일정 관련 */}
                     <Route path="/scheduleList/" element={<ScheduleList />} />
 
-                    <Route path="/schedulePage/:scheduleNo" element={<SchedulePage />} >
-                        <Route index element={<ScheduleData />} />
-                        <Route path="data" element={<ScheduleData />} />
-                        <Route path="search" element={<ScheduleSearch />} />
+                    <Route path="/schedulePage/:scheduleNo" element={<Private><SchedulePage /></Private>} >
+                        <Route index element={<Private><ScheduleData /></Private>} />
+                        <Route path="data" element={<Private><ScheduleData /></Private>} />
+                        <Route path="search" element={<Private><ScheduleSearch /></Private>} />
                     </Route>
 
                     <Route path="kakaotest" element={<KakaoMapTest />}></Route>
