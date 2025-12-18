@@ -6,6 +6,7 @@ import Jumbotron from "../templates/Jumbotron";
 import "../kakaopay/KakaoPay.css";
 import "./AccountPay.css";
 import { numberWithComma } from "../../utils/format";
+import { formatDateTime } from "../../utils/dateFormat";
 import { useAtom, useAtomValue } from "jotai";
 import { accessTokenState, loginCompleteState } from "../../utils/jotai";
 
@@ -77,7 +78,7 @@ export default function AccountPayInformation() {
         </div> */}
 
 
-        <hr  className="mt-5" />
+        <hr className="mt-5" />
 
         {paymentList.map((payment, i) => (
             <div
@@ -91,7 +92,7 @@ export default function AccountPayInformation() {
                             <h2>{payment.paymentName}</h2>
                             <div>거래금액 : 총 {numberWithComma(payment.paymentTotal)}원</div>
                             <div>거래번호 : {payment.paymentTid}</div>
-                            <div>거래일시 : {payment.paymentTime}</div>
+                            <div>거래일시 : {formatDateTime(payment.paymentTime)}</div>
                             <div>상태 : {calculateStatus(payment)}</div>
                             <div className="mt-2 text-end">
                                 <Link to={`/kakaopay/pay/detail/${payment.paymentNo}`} state={{ isRefund: checkPaymentRefund(payment.paymentTime) }} className="btn btn-outline-info">자세히 보기 <FaArrowRight /></Link>
