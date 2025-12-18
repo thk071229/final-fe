@@ -35,12 +35,6 @@ import MyPayment from "./mypage/MyPayment";
 import MySchedule from "./mypage/MySchedule";
 import MyWishList from "./mypage/MyWishList";
 
-
-
-
-
-
-
 export default function Content() {
     return (<>
         <div className="row">
