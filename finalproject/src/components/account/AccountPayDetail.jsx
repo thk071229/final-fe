@@ -8,6 +8,8 @@ import { toast } from "react-toastify";
 import Jumbotron from "../templates/Jumbotron";
 import { numberWithComma } from "../../utils/format";
 import { confirm } from "../../utils/confirm";
+import { useAtomValue } from "jotai";
+import { loginCompleteState } from "../../utils/jotai";
 
 export default function AccountPayDetail() {
     const { paymentNo } = useParams();
@@ -15,10 +17,13 @@ export default function AccountPayDetail() {
     const [payment, setPayment] = useState(null);
     const [paymentDetailList, setPaymentDetailList] = useState(null);
     const [kakaopayInfo, setKakaopayInfo] = useState(null);
+    const loginComplete = useAtomValue(loginCompleteState);
 
-    useEffect(() => {
-        loadData();
-    }, []);
+    useEffect(() => { 
+        if (loginComplete === true) {
+            loadData();
+        }
+    }, [loginComplete]);
 
     const loadData = useCallback(async () => {
         const { data } = await axios.get(`/payment/${paymentNo}`);
