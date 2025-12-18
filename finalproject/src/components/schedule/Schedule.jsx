@@ -29,6 +29,17 @@ export default function Schedule({ outletContext }) {
                 <span className="badge bg-warning p-2 mb-2">계획중</span>
             </div>
 
+            <div className="col-12 d-flex mt-2 align-items-center justify-content-center">
+                <button type="button" className={`btn ${outletContext.selectedSearch === "CAR" ? "btn-success" : "btn-secondary"} ms-1`} name="CAR" onClick={outletContext.selectSearch}>자동차</button>
+                    <button type="button" className={`btn ${outletContext.selectedSearch === "WALK" ? "btn-success" : "btn-secondary"} ms-1`} name="WALK" onClick={outletContext.selectSearch}>도보</button>
+            </div>
+            <div className="col-12 d-flex mt-2 align-items-center justify-content-center">
+                <button type="button" className={`btn ${outletContext.selectedType?.RECOMMEND ? "btn-success" : "btn-secondary"} ms-1`} name="RECOMMEND" onClick={outletContext.selectType}>추천경로</button>
+                <button type="button" className={`btn ${outletContext.selectedType?.TIME ? "btn-success" : "btn-secondary"} ms-1`} name="TIME" onClick={outletContext.selectType}>최단시간</button>
+                <button type="button" className={`btn ${outletContext.selectedType?.DISTANCE ? "btn-success" : "btn-secondary"} ms-1`} name="DISTANCE" onClick={outletContext.selectType}>최단길이</button>
+            </div>
+
+
 
             {/* 실제 내용 (ScheduleData 혹은 ScheduleSearch가 출력됨) */}
             <DndProvider backend={HTML5Backend}>

@@ -1,6 +1,6 @@
 import { useOutletContext } from "react-router-dom";
 import MarkerListSection from "../dnd/MarkerListSection";
-import { FaPlus } from "react-icons/fa6";
+import { FaFloppyDisk, FaFlutter, FaPlus } from "react-icons/fa6";
 import { FaRoute } from "react-icons/fa";
 
 export default function ScheduleData() {
@@ -15,6 +15,8 @@ export default function ScheduleData() {
         addDays,
         setSelectedDay,
         searchAllRoot,
+        sendData,
+        selectedType
     } = useOutletContext();
 
     return (<>
@@ -42,6 +44,7 @@ export default function ScheduleData() {
                     <MarkerListSection
                         selectedDay={dayKey}
                         markerIds={days[dayKey].markerIds}
+                        selectedType={selectedType}
                         routes={routes}
                         markerData={markerData}
                         setDays={setDays}
@@ -53,11 +56,14 @@ export default function ScheduleData() {
             ))}
             <div>
                 <div className="d-grid gap-2">
-                    <button className="btn btn-primary w-100 mb-2" onClick={searchAllRoot}>
+                    <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot()}}>
                         <FaRoute className="me-2" /> 전체 경로 검색하기
                     </button>
-                    <button className="btn btn-outline-success w-100" onClick={addDays}>
+                    <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
                         <FaPlus /> 날짜 추가
+                    </button>
+                    <button className="btn btn-outline-primary w-100" onClick={sendData}>
+                        <FaFloppyDisk /> 저장
                     </button>
                 </div>
             </div>
