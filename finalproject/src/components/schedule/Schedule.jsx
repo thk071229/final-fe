@@ -25,7 +25,7 @@ export default function Schedule({ outletContext }) {
             {/* 상단 공통 섹션: 제목/날씨 (검색 시에도 보이면 좋음) */}
             <div className="col-12 d-flex mt-2 align-items-center justify-content-center">
                 <span className="fs-3 mb-3"><TiWeatherPartlySunny /></span>
-                <h4><span className="m-2">일정 제목</span></h4>
+                <h4><span className="m-2">{outletContext.scheduleDto.scheduleName}</span></h4>
                 <span className="badge bg-warning p-2 mb-2">계획중</span>
             </div>
 
