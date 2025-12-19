@@ -3,6 +3,7 @@ import { useOutletContext } from "react-router-dom";
 import { User, Mail, Phone, Calendar, Smile } from "lucide-react";
 import axios from "axios";
 import MyInfoEditMoal from "./MyInfoEditMoal";
+import Swal from 'sweetalert2'
 
 // Minty 테마 색상
 const MINT_COLOR = "#78C2AD";
@@ -13,21 +14,92 @@ export default function MyInfo() {
     // state
     const [showModal, setShowModal] = useState(false);
 
-    // 모달 열기
-    const openMoal = useCallback(() => {
-        setShowModal(true);
-        // 모달 열릴 때 뒤쪽 스크롤 막기
-        document.body.style.overflow = "hidden";
-    }, []);
+    // 1. 닉네임 변경
+    const changeNickname = useCallback(async () => {
+        const result = await Swal.fire({
+            title: "새로운 닉네임 변경",
+            input: "text",
+            inputValue: myInfo.accountNickname, // 현재 값 보여주기
+            showCancelButton: true,
+            confirmButtonText: '수정',
+        });
+        if (result.isConfirmed && result.value) {
+            // 여기에 axios.post(...) 로직 추가
+            console.log("닉네임 변경:", result.value);
+        }
+    }, [myInfo.accountNickname]);
 
-    // 모달 닫기
-    const closeModal = useCallback(() => {
-        setShowModal(false);
-        // 닫을 때 스크롤 풀기
-        document.body.style.overflow = "unset";
-    }, []);
+    // 2. 이메일 변경
+    const changeEmail = useCallback(async () => {
+        const result = await Swal.fire({
+            title: "이메일 변경",
+            input: "email",
+            inputValue: myInfo.accountEmail,
+            showCancelButton: true,
+            confirmButtonText: '수정',
+        });
+        if (result.isConfirmed) {
+            console.log("이메일 변경:", result.value);
+        }
+    }, [myInfo.accountEmail]);
 
-    const InfoRow = ({ icon: Icon, label, value, readOnly = false, isLast = false }) => {
+    // 3. 연락처 변경
+    const changeContact = useCallback(async () => {
+        const result = await Swal.fire({
+            title: "연락처 변경",
+            input: "text",
+            inputValue: myInfo.accountContact,
+            showCancelButton: true,
+            confirmButtonText: '수정',
+        });
+        if (result.isConfirmed) {
+            console.log("연락처 변경:", result.value);
+        }
+    }, [myInfo.accountContact]);
+
+    // 4. 생년월일 변경
+    const changeBirth = useCallback(async () => {
+        const { value: date } = await Swal.fire({
+            title: "select departure date",
+            input: "date",
+            didOpen: () => {
+                const today = (new Date()).toISOString();
+                Swal.getInput().min = today.split("T")[0];
+            }
+        });
+        if (date) {
+            Swal.fire("Departure date", date);
+        }
+    }, [myInfo.accountBirth]);
+
+    // 5. 성별 변경
+    const changeGender = useCallback(async () => {
+        const { value: gender } = await Swal.fire({
+            title: "성별을 선택해주세요",
+            input: "select",
+            inputOptions: {
+                '남': '남성',
+                '여': '여성'
+            },
+            inputPlaceholder: "Select a Gender",
+            showCancelButton: true,
+            confirmButtonText: "수정하기",
+            inputValidator: (value) => {
+                return new Promise((resolve) => {
+                    if (value === "") {
+                        resolve("성별을 선택해야 합니다!");
+                    } else {
+                        resolve(); // 통과
+                    }
+                });
+            }
+        });
+        if (gender) {
+            Swal.fire(`You selected: ${gender}`);
+        }
+    }, [myInfo.accountGender]);
+
+    const InfoRow = ({ icon: Icon, label, value, readOnly = false, isLast = false, onEdit }) => {
         return (
             <div className={`row align-items-center py-3 mx-0 ${!isLast ? "border-bottom" : ""}`} style={{ borderColor: "#f0f0f0", minHeight: "70px" }}>
 
@@ -59,6 +131,7 @@ export default function MyInfo() {
                                 borderRadius: "8px",
                                 transition: "all 0.2s"
                             }}
+                            onClick={onEdit}
                             onMouseEnter={e => e.target.style.backgroundColor = "#e9ecef"}
                             onMouseLeave={e => e.target.style.backgroundColor = "#f1f3f5"}
                         >
@@ -77,11 +150,11 @@ export default function MyInfo() {
             {/* 리스트 박스 */}
             <div className="bg-white border rounded-4 shadow-sm">
                 <InfoRow icon={User} label="아이디" value={myInfo.accountId} readOnly />
-                <InfoRow icon={Smile} label="닉네임" value={myInfo.accountNickname} />
-                <InfoRow icon={Mail} label="이메일" value={myInfo.accountEmail} />
-                <InfoRow icon={Phone} label="연락처" value={myInfo.accountContact} />
-                <InfoRow icon={Calendar} label="생년월일" value={myInfo.accountBirth} />
-                <InfoRow icon={User} label="성별" value={myInfo.accountGender} isLast />
+                <InfoRow icon={Smile} label="닉네임" value={myInfo.accountNickname} onEdit={changeNickname} />
+                <InfoRow icon={Mail} label="이메일" value={myInfo.accountEmail} onEdit={changeEmail} />
+                <InfoRow icon={Phone} label="연락처" value={myInfo.accountContact} onEdit={changeContact} />
+                <InfoRow icon={Calendar} label="생년월일" value={myInfo.accountBirth} onEdit={changeBirth} />
+                <InfoRow icon={User} label="성별" value={myInfo.accountGender} onEdit={changeGender} isLast />
             </div>
 
             <style>{`

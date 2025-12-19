@@ -5,8 +5,10 @@ import { AiOutlineSchedule } from "react-icons/ai";
 import { MdPayment } from "react-icons/md";
 import { FaHeart } from "react-icons/fa";
 import axios from "axios";
-import { useAtom, useAtomValue } from "jotai";
-import { accessTokenState, loginCompleteState } from "../../utils/jotai";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { accessTokenState, clearLoginState, loginCompleteState, loginIdState, loginLevelState, loginState, refreshTokenState } from "../../utils/jotai";
+import Swal from 'sweetalert2'
+import { toast } from "react-toastify";
 
 // 눈이 편안한 색상 팔레트 정의
 const PALETTE = {
@@ -23,7 +25,14 @@ const PALETTE = {
 export default function MyPage() {
     // 이동 도구
     const navigate = useNavigate();
-    const logincomplete = useAtomValue(loginCompleteState);
+
+    //jotai state
+    const [loginId, setloginId] = useAtom(loginIdState);
+    const [loginLevel, setLoginLevel] = useAtom(loginLevelState);
+    const [accessToken, setAccessToken] = useAtom(accessTokenState);
+    const [logincomplete, setLoginComplete] = useAtom(loginCompleteState);
+    const isLogin = useAtomValue(loginState);
+    const clearLogin = useSetAtom(clearLoginState); // setter 가져오기
     // 링크 공통 스타일
     const linkBaseStyle = {
         borderRadius: "12px",
@@ -85,8 +94,51 @@ export default function MyPage() {
         }
     }, []);
 
-    // 회원탈퇴 
-    const deleteAccount = useCallback((e)=>{},[]);
+    const deleteAccount = useCallback(async (e) => {
+        // 1. 비밀번호 입력 창 띄우기 (결과를 먼저 변수에 받음)
+        const result = await Swal.fire({
+            title: "삭제를 위해 비밀번호를 한 번 더 입력해주세요",
+            input: "password",
+            inputLabel: "Password",
+            inputPlaceholder: "Enter your password",
+            inputAttributes: {
+                maxlength: "10",
+                autocapitalize: "off",
+                autocorrect: "off"
+            },
+            showCancelButton: true, // 취소 버튼 추가 권장
+            confirmButtonText: '탈퇴하기',
+        });
+
+        // 2. 사용자가 '확인'을 눌렀고, 비밀번호(value)가 있을 때만 실행
+        if (result.isConfirmed && result.value) {
+            const rawPassword = result.value;
+
+            try {
+                // (1) 백엔드에 삭제 요청
+                await axios.post("/account/withdraw", { accountPw: rawPassword });
+
+                // (2) 성공 시, 브라우저 저장소 비우기 (필수!)
+                window.sessionStorage.removeItem("accessToken");
+                window.localStorage.removeItem("refreshToken");
+                delete axios.defaults.headers.common["Authorization"];
+
+                // (3) Jotai 상태(메모리) 초기화 (작성하신 부분)
+                clearLogin();
+
+                // (4) 완료 메시지 및 이동
+                toast.success("삭제가 완료되었습니다");
+                navigate("/");
+
+            } catch (e) {
+                console.error(e);
+                // 비밀번호가 틀렸거나 서버 오류일 때
+                toast.error("삭제에 실패하였습니다. 비밀번호를 확인해주세요.");
+            }   
+        }
+    }, [clearLogin]); // 의존성 배열 추가
+
+
 
     return (
         <div className="container-fluid p-0" style={{ minHeight: "100vh", backgroundColor: "#f8f9fa" }}>
@@ -162,11 +214,7 @@ export default function MyPage() {
                                 e.currentTarget.style.backgroundColor = PALETTE.dangerBg;
                                 e.currentTarget.style.color = PALETTE.dangerText;
                             }}
-                            onClick={() => {
-                                if (window.confirm("정말로 탈퇴하시겠습니까? 모든 정보가 삭제됩니다.")) {
-                                    alert("탈퇴 처리가 진행됩니다.");
-                                }
-                            }}
+                            onClick={deleteAccount}
                         >
                             <FaTrash className="me-2" /> 회원탈퇴
                         </button>

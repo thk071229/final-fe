@@ -39,7 +39,9 @@ export const clearLoginState = atom(null, (get,set)=>{
     set(loginLevelState,"");
     set(accessTokenState,"");
     set(refreshTokenState,"");
-})
+
+    set(loginCompleteState, false);
+}); 
 
 // 로그인 판정이 완료되었는지 확인하기 위한 데이터
 export const loginCompleteState = atom(false);
