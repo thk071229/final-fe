@@ -165,11 +165,6 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
         formData.append("accountGender", account.accountGender);
         formData.append("accountBirth", account.accountBirth);
 
-        // FormData 내부 값 확인하는 방법
-    for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
-    }
-
         if (file) {// 파일이 있으면 전송 목록에 추가
             formData.append("attach", file);
         }

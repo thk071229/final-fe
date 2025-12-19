@@ -10,6 +10,7 @@ import { numberWithComma } from "../../utils/format";
 import { confirm } from "../../utils/confirm";
 import { useAtomValue } from "jotai";
 import { loginCompleteState } from "../../utils/jotai";
+import { formatDateTime } from "../../utils/dateFormat";
 
 export default function AccountPayDetail() {
     const { paymentNo } = useParams();
@@ -79,6 +80,33 @@ export default function AccountPayDetail() {
     const location = useLocation();
     const { isRefund } = location.state || {};
 
+    // 카카오페이 공식 문서에 이 의외의 경우는 없다
+    const paymentStatus = useCallback(status => {
+        if (status === "READY") return "결제 요청";
+        if (status === "SEND_TMS") return "결제 요청 메시지(TMS) 발송 완료";
+        if (status === "OPEN_PAYMENT") return "사용자가 카카오페이 결제 화면 진입";
+        if (status === "SELECT_METHOD") return "결제 수단 선택, 인증 완료";
+        if (status === "ARS_WAITING") return "ARS 인증 진행 중";
+        if (status === "AUTH_PASSWORD") return "비밀번호 인증 완료";
+        if (status === "ISSUED_SID") return "SID 발급 완료";
+        //if (status === "SUCCESS_PAYMENT") return "결제 완료";
+        if (status === "PART_CANCEL_PAYMENT") return "부분 취소";
+        if (status === "CANCEL_PAYMENT") return "결제 취소";
+        if (status === "FAIL_AUTH_PASSWORD") return "사용자 비밀번호 인증 실패";
+        if (status === "QUIT_PAYMENT") return "사용자가 결제 중단";
+        if (status === "FAIL_PAYMENT") return "결제 승인 실패";
+
+        return "결제 완료";
+    }, []);
+    // 카카오페이 공식 문서에 이 의외의 경우는 없다
+    const paymentType = useCallback(type => {
+        if (type === "PAYMENT")
+            return "결제";
+        if (type === "ISSUED_SID")
+            return "SID 발급";
+        return "취소";
+    }, []);
+
     //return
     return (<>
 
@@ -128,7 +156,7 @@ export default function AccountPayDetail() {
                                     <div className="d-flex align-items-center flex-grow-1">
 
                                         {/* 텍스트 3줄 영역 (가로폭 크게) */}
-                                        <div className="d-flex flex-column gap-1 text-smallSize flex-grow-1">
+                                        <div className="d-flex flex-column gap-1 flex-grow-1">
                                             <div className="row">
                                                 <div className="col-sm-4 text-primary">결제번호</div>
                                                 <div className="col-sm-8 text-secondary">{payment.paymentNo}</div>
@@ -202,7 +230,7 @@ export default function AccountPayDetail() {
                                         <div className="d-flex align-items-center flex-grow-1">
 
                                             {/* 텍스트 3줄 영역 (가로폭 크게) */}
-                                            <div className="d-flex flex-column gap-1 text-smallSize flex-grow-1">
+                                            <div className="d-flex flex-column gap-1 flex-grow-1">
                                                 <div className="row">
                                                     <div className="col-sm-4 text-primary">상세번호</div>
                                                     <div className="col-sm-8 text-secondary">
@@ -263,7 +291,8 @@ export default function AccountPayDetail() {
                 {kakaopayInfo === null ? (
 
                     <div className="fw-bold" style={{ width: 220 }}>
-                        카카오페이 정보 Loading...
+                        카카오페이 정보 Loadin
+                        g...
                     </div>
 
                 ) : (
@@ -286,7 +315,7 @@ export default function AccountPayDetail() {
                                     <div className="d-flex align-items-center flex-grow-1">
 
                                         {/* 텍스트 3줄 영역 (가로폭 크게) */}
-                                        <div className="d-flex flex-column gap-1 text-smallSize flex-grow-1">
+                                        <div className="d-flex flex-column gap-1 flex-grow-1">
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">거래번호</div>
                                                 <div className="col-sm-9 text-secondary">{kakaopayInfo.tid}</div>
@@ -297,7 +326,7 @@ export default function AccountPayDetail() {
                                             </div>
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">결제 상태</div>
-                                                <div className="col-sm-9 text-secondary">{kakaopayInfo.status}</div>
+                                                <div className="col-sm-9 text-secondary">{paymentStatus(kakaopayInfo.status)}</div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">주문번호</div>
@@ -311,7 +340,9 @@ export default function AccountPayDetail() {
                                                 <div className="col-sm-3 text-primary">구매 금액</div>
                                                 <div className="col-sm-9 text-secondary">
                                                     <div className="custom-overlay d-flex align-items-center">
-                                                        {numberWithComma(kakaopayInfo.amount.total)}원
+                                                        <span className="">
+                                                            {numberWithComma(kakaopayInfo.amount.total)}원
+                                                        </span>
                                                         <FaQuestionCircle className="text-primary ms-2" />
                                                         <div className="custom-overlay-popup">
                                                             <div className="row">
@@ -343,7 +374,9 @@ export default function AccountPayDetail() {
                                                 <div className="col-sm-9 text-secondary">
                                                     {kakaopayInfo.cancel_amount !== null ? (
                                                         <div className="custom-overlay d-flex align-items-center">
-                                                            {numberWithComma(kakaopayInfo.cancel_amount.total)}원
+                                                            <span className="">
+                                                                {numberWithComma(kakaopayInfo.amount.total)}원
+                                                            </span>
                                                             <FaQuestionCircle className="text-primary ms-2" />
                                                             <div className="custom-overlay-popup">
                                                                 <div className="row">
@@ -420,16 +453,16 @@ export default function AccountPayDetail() {
                                             </div>
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">결제 시작시각</div>
-                                                <div className="col-sm-9 text-secondary">{kakaopayInfo.created_at}</div>
+                                                <div className="col-sm-9 text-secondary">{formatDateTime(kakaopayInfo.created_at)}</div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">결제 승인시각</div>
-                                                <div className="col-sm-9 text-secondary">{kakaopayInfo.approved_at}</div>
+                                                <div className="col-sm-9 text-secondary">{formatDateTime(kakaopayInfo.approved_at)}</div>
                                             </div>
                                             <div className="row">
                                                 <div className="col-sm-3 text-primary">결제 취소시각</div>
                                                 <div className="col-sm-9 text-secondary">
-                                                    {kakaopayInfo.canceled_at || "없음"}
+                                                    {(kakaopayInfo.canceled_at !== null) ? formatDateTime(kakaopayInfo.canceled_at) : "없음"}
                                                 </div>
                                             </div>
                                             <div className="row">
@@ -473,7 +506,7 @@ export default function AccountPayDetail() {
                                                                 </div>
                                                                 <div className="row">
                                                                     <div className="col-6">요청시각</div>
-                                                                    <div className="col-6">{detail.approved_at}</div>
+                                                                    <div className="col-6">{formatDateTime(detail.approved_at)}</div>
                                                                 </div>
                                                                 <div className="row">
                                                                     <div className="col-6">금액</div>
@@ -481,7 +514,7 @@ export default function AccountPayDetail() {
                                                                 </div>
                                                                 <div className="row">
                                                                     <div className="col-6">유형</div>
-                                                                    <div className="col-6">{detail.payment_action_type}</div>
+                                                                    <div className="col-6">{paymentType(detail.payment_action_type)}</div>
                                                                 </div>
                                                                 <div className="row">
                                                                     <div className="col-6">메모</div>

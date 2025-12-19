@@ -33,14 +33,20 @@ export default function Menu() {
   //state
   const [open, setOpen] = useState(false);
 
-  // 화면이 로딩될때마다 accessToken이 있는 경우 axios에 설정하는 코드 구현
+  // 화면이 로딩될 때마다 실행
   useEffect(() => {
-    if (accessToken?.length > 0) {
+    // 1. 토큰이 유효한 경우
+    if (accessToken && accessToken.length > 0) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
     }
-    //판정이 끝난 시점
+    // 2. 토큰이 없는 경우 (로그아웃 상태)
+    else {
+      delete axios.defaults.headers.common["Authorization"];
+    }
+    // 3. 로그인 판정 완료 (로그인이든 아니든 로딩은 끝난 것임)
     setLoginComplete(true);
-  }, [accessToken]);
+
+  }, [accessToken, setLoginComplete]); // clearLogin 의존성 제거
 
   //callback
   const closeMenu = useCallback(() => {

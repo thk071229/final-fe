@@ -9,6 +9,8 @@ import { numberWithComma } from "../../utils/format";
 import { formatDateTime } from "../../utils/dateFormat";
 import { useAtom, useAtomValue } from "jotai";
 import { accessTokenState, loginCompleteState } from "../../utils/jotai";
+import { throttle } from "lodash";
+import { useRef } from "react";
 
 export default function AccountPayInformation() {
 
@@ -17,18 +19,77 @@ export default function AccountPayInformation() {
     const [paymentList, setPaymentList] = useState([]);
     const loginComplete = useAtomValue(loginCompleteState);
 
+    // 페이징 작업
+    const [page, setPage] = useState(1);
+    const [info, setInfo] = useState({
+        page: 0, size: 0, begin: 0, end: 0, count: 0, last: true
+    });
+
+    const loading = useRef(false);
+    // 페이징 작업
+
     useEffect(() => {
         // 토큰이 있을 때만 데이터 로드 (선택 사항)
         if (loginComplete === true) {
             loadData();
         }
-    }, [loginComplete]); // 토큰이 로드되면 실행
+    }, [loginComplete, page]); // 토큰이 로드되면 실행
 
     const loadData = useCallback(async () => {
 
-        const { data } = await axios.get("/payment/account")
-        setPaymentList(data);
-    }, [setPaymentList]);
+        loading.current = true;
+
+        const response = await axios.get(`/payment/page/${page}`);
+        if (page === 1) {
+            setPaymentList(response.data.list);
+        }
+        else {
+            setPaymentList(prev => ([...prev, ...response.data.list]));
+        }
+
+        const { list, ...others } = response.data;
+        setInfo(others);
+
+        loading.current = false;
+    }, [page]);
+
+
+    useEffect(() => {
+        const listener = throttle(e => {
+            const percent = getScrollPercent();
+            
+            if (percent === 100 && loading.current === false) {
+                setPage(prev => prev + 1);
+            }
+        }, 500);
+
+        window.addEventListener("scroll", listener);
+
+        return () => {
+            window.removeEventListener("scroll", listener);
+        };
+    }, []);
+
+    const getScrollPercent = useCallback(() => {
+
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        const clientHeight = document.documentElement.clientHeight;
+
+        if (scrollHeight <= clientHeight) {
+            return 0;
+        }
+
+        const scrollableHeight = scrollHeight - clientHeight;
+
+        if (scrollableHeight - scrollTop < 1) {
+            return 100;
+        }
+
+        const percentage = (scrollTop / scrollableHeight) * 100;
+
+        return percentage;
+    }, []);
 
     const calculateStatus = useCallback(payment => {
         const { paymentTotal, paymentRemain } = payment;
@@ -62,8 +123,8 @@ export default function AccountPayInformation() {
 
             <div className="row">
                 <div className="col">
-                    <h3 className="text-center">카카오페이 결제내역 조회</h3>
-                    <p className="text-center text-desc">
+                    <h3 className="text-center ellipsis">카카오페이 결제내역 조회</h3>
+                    <p className="text-center text-desc ellipsis">
                         카카오페이에서 결제내역을 알아봅시다.
                     </p>
                 </div>
@@ -94,7 +155,7 @@ export default function AccountPayInformation() {
             <div className="d-flex align-items-center">
                 {paymentList === null ? (
 
-                    <div className="fw-bold" style={{ width: 220 }}>
+                    <div className="fw-bold ellipsis" style={{ width: 220 }}>
                         결제 내역 조회 Loading...
                     </div>
 
@@ -112,7 +173,7 @@ export default function AccountPayInformation() {
                                     <div className="p-4 shadow rounded d-flex align-items-start w-100">
 
                                         {/* 상품명 영역 */}
-                                        <div className="fw-bold me-3" style={{ width: 220 }}>
+                                        <div className="fw-bold me-3 ellipsis" style={{ width: 220 }}>
                                             {payment.paymentName}
                                         </div>
 
@@ -120,22 +181,22 @@ export default function AccountPayInformation() {
                                         <div className="d-flex align-items-center flex-grow-1">
 
                                             {/* 텍스트 3줄 영역 (가로폭 크게) */}
-                                            <div className="d-flex flex-column gap-1 text-smallSize flex-grow-1">
+                                            <div className="d-flex flex-column gap-1 flex-grow-1">
                                                 <div className="row">
-                                                    <div className="col-sm-4 text-primary">거래금액</div>
-                                                    <div className="col-sm-8 text-secondary">총 {numberWithComma(payment.paymentTotal)}원</div>
+                                                    <div className="col-sm-4 text-primary ellipsis">거래금액</div>
+                                                    <div className="col-sm-8 text-secondary ellipsis">총 {numberWithComma(payment.paymentTotal)}원</div>
                                                 </div>
                                                 <div className="row">
-                                                    <div className="col-sm-4 text-primary">거래번호</div>
-                                                    <div className="col-sm-8 text-secondary">{payment.paymentTid}</div>
+                                                    <div className="col-sm-4 text-primary ellipsis">거래번호</div>
+                                                    <div className="col-sm-8 text-secondary ellipsis">{payment.paymentTid}</div>
                                                 </div>
                                                 <div className="row">
-                                                    <div className="col-sm-4 text-primary">거래일시</div>
-                                                    <div className="col-sm-8 text-secondary">{formatDateTime(payment.paymentTime)}</div>
+                                                    <div className="col-sm-4 text-primary ellipsis">거래일시</div>
+                                                    <div className="col-sm-8 text-secondary ellipsis">{formatDateTime(payment.paymentTime)}</div>
                                                 </div>
                                                 <div className="row">
-                                                    <div className="col-sm-4 text-primary">상태</div>
-                                                    <div className={`col-sm-8 text-${statusTextColor(payment)}`}>{calculateStatus(payment)}</div>
+                                                    <div className="col-sm-4 text-primary ellipsis">상태</div>
+                                                    <div className={`col-sm-8 text-${statusTextColor(payment)} ellipsis`}>{calculateStatus(payment)}</div>
                                                 </div>
                                             </div>
 
@@ -144,7 +205,7 @@ export default function AccountPayInformation() {
                                                 <Link
                                                     to={`/kakaopay/pay/detail/${payment.paymentNo}`}
                                                     state={{ isRefund: !checkPaymentRefund(payment.paymentTime) }}
-                                                    className="btn btn-outline-info"
+                                                    className="btn btn-outline-info ellipsis"
                                                     style={{ fontSize: "0.8em" }}
                                                 >
                                                     자세히 보기 <FaArrowRight />

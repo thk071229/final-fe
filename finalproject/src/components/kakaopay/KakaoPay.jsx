@@ -241,13 +241,20 @@ export default function KakaoPay() {
                 </div>
             </div>
 
+            <hr className="my-3"/>
+
+            {checkedShopList.map((checkedShop, index) => (
+                <div className="row">
+                    <div className="col text-center">
+                        {checkedShop.shopName} X {checkedShop.qty}개 = {numberWithComma(checkedShop.shopPrice * checkedShop.qty)}원
+                    </div>
+                </div>
+            ))}
+
             <div className="row mt-4">
-                <h5 className="col text-start">
-                    {checkedShopList.length}개의 상품권
-                </h5>
-                <h5 className="col text-end">
-                    금액: {numberWithComma(checkedTotal)}원
-                </h5>
+                <div className="col text-center">
+                    총 {numberWithComma(checkedTotal)}원
+                </div>
             </div>
 
             <div className="row mt-4">

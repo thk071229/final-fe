@@ -41,7 +41,9 @@ export const clearLoginState = atom(null, (get,set)=>{
     set(loginLevelState,"");
     set(accessTokenState,"");
     set(refreshTokenState,"");
-})
+
+    set(loginCompleteState, false);
+}); 
 
 export const clearMessageState = atom(null, (get, set)=>{
     set(messageHistoryState, "");
