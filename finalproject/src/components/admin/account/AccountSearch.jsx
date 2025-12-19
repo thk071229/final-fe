@@ -3,7 +3,7 @@ import { useCallback, useState } from "react";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { PiTildeBold } from "react-icons/pi";
 
-export default function AccountManager() {
+export default function AccountSearch() {
     //state
     const [input, setInput] = useState({//입력용
         accountId : "",
@@ -14,7 +14,7 @@ export default function AccountManager() {
         minAccountPoint:"", maxAccountPoint:"",
         beginAccountJoin:"", endAccountJoin:"",
         accountAddress: "",
-        accountLevelList: ["일반회원", "우수회원", "관리자"],
+        accountLevelList: ["일반회원", "상담사", "관리자"],
     });
     const [accountList, setAccountList] = useState([]);//결과 출력용
 
@@ -28,7 +28,7 @@ export default function AccountManager() {
     }, []);
 
     const sendData = useCallback(async ()=>{
-        const {data} = await axios.post("/account/search", input);
+        const {data} = await axios.post("/admin/search", input);
         setAccountList(data);
     }, [input]);
 
@@ -135,10 +135,10 @@ export default function AccountManager() {
                 </div>
                 <div className="form-check">
                     <label className="form-check-label">
-                        <input className="form-check-input" type="checkbox" value="우수회원"
-                                checked={input.accountLevelList.includes("우수회원")} 
+                        <input className="form-check-input" type="checkbox" value="상담사"
+                                checked={input.accountLevelList.includes("상담사")} 
                                 onChange={changeAccountLevelList} />
-                        <span>우수회원</span>
+                        <span>상담사</span>
                     </label>
                 </div>
                 <div className="form-check">

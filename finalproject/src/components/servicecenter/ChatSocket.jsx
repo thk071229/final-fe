@@ -119,6 +119,7 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
     const connectToServer = useCallback(() => {
         setWsConnectionState("connecting"); // 💡 연결 시도 시작 시 상태 변경
 
+        // const socket = new SockJS(import.meta.env.VITE_WEBSOCKET_URL);
         const socket = new SockJS("http://localhost:8080/ws");
         const client = new Client({
             webSocketFactory: () => socket,
