@@ -1,62 +1,78 @@
 import axios from "axios";
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from "jwt-decode"
+import { useAtom, useAtomValue } from "jotai";
+import { accessTokenState, counselorState, loginIdState, loginLevelState, loginState, messageHistoryState, refreshTokenState } from "../../utils/jotai";
+import { toast } from "react-toastify";
 
 const API_URL = '/chat';
 
-const useAuth = () => {
-    const rawToken = sessionStorage.getItem("accessToken");
-
-    if (!rawToken) {
-        return { isLoggedIn: false, userLevel: null, loginId: null };
-    }
-
-    try {
-        const token = rawToken.replace(/"/g, '');
-        const payload = jwtDecode(token);
-        console.log(payload);
-        return {
-            isLoggedIn: true,
-            userLevel: payload.loginLevel,
-            loginId: payload.loginId,
-        };
-    } catch (e) {
-        console.error("JWT 파싱 오류:", e);
-        return { isLoggedIn: false, userLevel: null, loginId: null };
-    }
-};
-
 export default function CounselorDashboard() {
     const navigate = useNavigate();
-    const { isLoggedIn, userLevel, loginId } = useAuth();
-    const REQUIRED_LEVEL = '상담사';
+    // const REQUIRED_LEVEL = '상담사';
     const [room, setRoom] = useState([]);
     const [selectedRoomId, setSelectedRoomId] = useState(null);
     const [inputText, setInputText] = useState("");
     const [messages, setMessages] = useState({});
+    const [checkedAuth, setCheckedAuth] = useState(false);
+
     const messagesEndRef = useRef(null);
 
     const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        if (!isLoggedIn) {
-            navigate("/account/login", { replace: true });
-            return;
-        }
+    const [loginId, setLoginId] = useAtom(loginIdState);
+    const [loginLevel, setLoginLevel] = useAtom(loginLevelState);
+    const [accessToken, setAccessToken] = useAtom(accessTokenState);
+    const [refreshToken, setRefreshToken] = useAtom(refreshTokenState);
 
-        if (userLevel !== REQUIRED_LEVEL) {
-            alert("상담사 전용 페이지입니다.");
-            navigate("/unauthorized", { replace: true });
-            return;
-        }
-    }, [isLoggedIn, userLevel, navigate]);
+    const [history, setHistory] = useAtom(messageHistoryState);
+
+    
+    const isLoggedIn = useAtomValue(loginState);
+    const isCounselor = useAtomValue(counselorState);
+
+    // useEffect(() => {
+    //     if (checkedAuth) return;
+
+    //     if (!isLoggedIn) {
+    //         navigate("/account/login");
+    //         setCheckedAuth(true);
+    //         return;
+    //     }
+
+    //     if (!isCounselor) {
+    //         //alert("상담사 전용 페이지입니다.");
+    //         navigate("/unauthorized");
+    //         setCheckedAuth(true);
+    //         //return;
+    //     }
+    // }, [isLoggedIn, isCounselor, checkedAuth]);
+
+    useEffect(() => {
+        if (checkedAuth) return;
+
+        const handleAuth = () => {
+            if (!isLoggedIn) {
+                navigate("/account/login");
+                setCheckedAuth(true);
+                return;
+            }
+            if (!isCounselor) {
+                toast.error("상담사 전용 페이지입니다."); // 한 번만 호출
+                navigate("/unauthorized");
+                setCheckedAuth(true);
+            }
+        };
+
+        handleAuth();
+    }, [isLoggedIn, isCounselor, checkedAuth]);
 
     const fetchChatRooms = async () => {
+        setIsLoading(true);
         try {
-            const rawToken = sessionStorage.getItem("accessToken");
-            if (!rawToken) return;
-            const token = rawToken.replace(/"/g, '');
+            // const rawToken = sessionStorage.getItem("accessToken");
+            if (!accessToken) return;
+            const token = accessToken.replace(/"/g, '');
             console.log(token)
             const response = await axios.get(`${API_URL}/counselor/list`, {
                 headers: { Authorization: `Bearer ${token}` }
@@ -75,75 +91,97 @@ export default function CounselorDashboard() {
                     chatLevel: dto.chatLevel
                 }));
 
-                setRoom(convertedRooms);
+                setRoom(prevRooms => {
+                    return convertedRooms.map(newRoom => {
+                        const prev = prevRooms.find(r => r.id === newRoom.id);
+                        return prev ? { ...newRoom, ...prev } : newRoom;
+                    });
+                });
             }
 
         } catch (error) {
-            console.error("채팅 목록 로드 오류:", error);
-            if (error.response && (error.response.status === 403 || error.response.status === 401)) {
-                alert("상담사 전용 페이지입니다. 권한이 없습니다.");
-                navigate("/unauthorized");
-                return;
-            }
+           if (error.response?.status === 403) {
+            toast.error("상담사 전용 페이지입니다. 권한이 없습니다.", { toastId: "authError" });
+            navigate("/unauthorized");
+        }
         } finally {
-            setIsLoading(false); // 에러가 나든 성공하든 마지막엔 false
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
         fetchChatRooms();
-    }, []);
+
+        const interval = setInterval(() => {
+            if (!selectedRoomId) {
+                fetchChatRooms();
+            }
+        }, 5000); //5초마다 갱신
+
+        return () => clearInterval(interval);
+        // console.log("상담사 채팅 대시보드 mounted, 자동 갱신 시작");
+
+    }, [selectedRoomId]);
+
+    //새로고침 후 채팅방 복구
+    useEffect(() => {
+        if(room.length === 0) return;
+
+        const saveRoomId = sessionStorage.getItem("activeChatRoomId");
+        if(!saveRoomId) return;
+
+        const saveId = Number(saveRoomId);
+
+        const reRoom = room.find(r => 
+            r.id === saveId && 
+            r.status === 'ACTIVE' && 
+            r.chatId === loginId
+        );
+
+        if(reRoom) {
+            setSelectedRoomId(saveId);
+        }
+        else {
+            sessionStorage.removeItem("activeChatRoomId");
+        }
+    }, [loginId, room]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages, selectedRoomId]);
 
+    // useEffect(() => {
+    //     if (selectedRoomId && !room.some(r => r.id === selectedRoomId)) {
+    //         setSelectedRoomId(null);
+    //     }
+    // }, [room]);
+
     useEffect(() => {
-        if (selectedRoomId && !room.some(r => r.id === selectedRoomId)) {
+        if (!selectedRoomId) return;
+
+        const current = room.find(r => r.id === selectedRoomId);
+
+        // CLOSED일 때만 나가게 수정
+        if (current && current.status === 'CLOSED') {
             setSelectedRoomId(null);
         }
-    }, [room]);
-
-    const updateChatStatus = async (chatNo, newStatus) => {
-        const rawToken = sessionStorage.getItem("accessToken");
-        if (!rawToken) return;
-        const token = rawToken.replace(/"/g, '');
-
-        // 백엔드 전송용 데이터
-        const updateData = {
-            chatNo: chatNo,
-            chatStatus: newStatus,
-            chatId: newStatus === 'ACTIVE' ? loginId : null,
-        };
-
-        try {
-            const response = await axios.post(`${API_URL}/status`, updateData, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    "Authorization": `Bearer ${token}`,
-                }
-            });
-
-            // 성공 시 목록 새로고침
-            if (response.status === 200 || response.status === 204) {
-                // await fetchChatRooms();
-            }
-        } catch (error) {
-            console.error("오류 발생 줄:", error.config);
-            alert(`상태 변경 실패: ${error.response?.data || error.message}`);
-        }
-    };
+    }, [room, selectedRoomId]);
 
     // const updateChatStatus = async (chatNo, newStatus) => {
-    //     const rawToken = sessionStorage.getItem("accessToken");
-    //     if (!rawToken) return;
-    //     const token = rawToken.replace(/"/g, '');
+    //     //const rawToken = sessionStorage.getItem("accessToken");
+    //     if (!accessToken) return;
+    //     const token = accessToken.replace(/"/g, '');
 
     //     const updateData = {
-    //         chatNo: chatNo,
+    //         chatNo,
     //         chatStatus: newStatus,
-    //         chatId: newStatus === 'ACTIVE' ? loginId : null,
     //     };
+
+    //     await axios.post(`${API_URL}/status`, updateData, {
+    //         headers: {
+    //             Authorization: `Bearer ${token}`,
+    //         }
+    //     });
 
     //     try {
     //         const response = await axios.post(`${API_URL}/status`, updateData, {
@@ -153,30 +191,46 @@ export default function CounselorDashboard() {
     //             }
     //         });
 
-    //         // axios는 응답이 성공하면 response.status가 2xx입니다.
+    //         // 성공 시 목록 새로고침
     //         if (response.status === 200 || response.status === 204) {
-    //             console.log("상태 업데이트 성공");
-    //             fetchChatRooms(); // 목록 새로고침
+    //             // await fetchChatRooms();
     //         }
     //     } catch (error) {
-    //         console.error("상태 변경 오류 상세:", error.response?.data || error.message);
-    //         alert(`상태 변경 실패: ${error.response?.data?.message || "서버 응답 오류"}`);
+    //         console.error("오류 발생 줄:", error.config);
+    //         alert(`상태 변경 실패: ${error.response?.data || error.message}`);
     //     }
     // };
+
+    const updateChatStatus = async (chatNo, newStatus) => {
+    if (!accessToken) return;
+    const token = accessToken.replace(/"/g, '');
+
+    try {
+        const response = await axios.post(
+            `${API_URL}/status`,
+            { chatNo, chatStatus: newStatus },
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                }
+            }
+        );
+
+        return response;
+    } catch (error) {
+        console.error("상태 변경 실패:", error);
+        throw error;
+    }
+};
 
     const handleRoomClick = (id) => {
         const clickedRoom = room.find(r => r.id === id);
         if (!clickedRoom) return;
 
         setSelectedRoomId(id);
+        sessionStorage.setItem("activeChatRoomId", id);
 
-        // setRoom(prev =>
-        //     prev.map(r =>
-        //         r.id === id && r.status === 'WAITING'
-        //             ? { ...r, status: 'ACTIVE', chatId: loginId }
-        //             : r
-        //     )
-        // );
         if (clickedRoom.status === 'WAITING') {
             setRoom(prev =>
                 prev.map(r =>
@@ -186,11 +240,6 @@ export default function CounselorDashboard() {
                 )
             );
             updateChatStatus(id, 'ACTIVE');
-        // const chatRoom = room.find(r => r.id === id);
-        // if (chatRoom && chatRoom.status === 'WAITING') {
-        //     console.log("Updating chat status to ACTIVE for chatNo:", id);
-        //     updateChatStatus(id, 'ACTIVE');
-        // }
         }
     };
 
@@ -215,21 +264,19 @@ export default function CounselorDashboard() {
         if (e.key === "Enter") handleSendMessage();
     };
 
-    const handleCloseChat = () => {
+    const handleCloseChat = async () => {
         if (!selectedRoomId) return;
 
-        if (window.confirm("정말로 상담을 종료하시겠습니까?")) {
-            updateChatStatus(selectedRoomId, 'CLOSED');
-            setSelectedRoomId(null);
-        }
+        if (!window.confirm("정말 상담을 종료하시겠습니까?")) return;
+
+        await updateChatStatus(selectedRoomId, "CLOSED");
+
+        setRoom(prev => prev.filter(r => r.id !== selectedRoomId));
+        setSelectedRoomId(null);
     };
 
     const currentRoom = room?.find(r => r.id === selectedRoomId) || null;
     const currentMessages = messages[selectedRoomId] || [];
-
-    // if (selectedRoomId && !currentRoom) {
-    //     return <div style={styles.centerPane}>데이터를 불러오는 중...</div>;
-    // }
 
     const getBadgeStyle = (status) => {
         switch (status) {
@@ -240,7 +287,8 @@ export default function CounselorDashboard() {
         }
     };
 
-    if (!isLoggedIn || userLevel !== REQUIRED_LEVEL) return null;
+    // if (!isLoggedIn || userLevel !== REQUIRED_LEVEL) return null;
+    if (!isLoggedIn || !isCounselor) return null;
 
     return (
         <div style={styles.container}>
@@ -388,27 +436,29 @@ export default function CounselorDashboard() {
             {/* 오른쪽 패널 */}
             <div style={styles.rightPane}>
                 <div style={styles.paneHeader}>고객 정보</div>
-                {currentRoom ? (
-                    <div style={{ padding: '20px' }}>
-                        <div style={styles.infoCard}>
-                            <strong>회원 정보</strong>
-                            <p>방 번호: {currentRoom?.id}</p>
-                            <p>이름: {currentRoom?.userName}</p>
-                            <p>등급: {currentRoom?.userGrade}</p>
-                            <p>상태: {getBadgeStyle(currentRoom?.status).text}</p>
-                            <p>배정 상담사: {currentRoom?.chatId || '없음'}</p>
-                        </div>
+                <div style={styles.rightContent}>
+                    {currentRoom ? (
+                        <div style={{ padding: '20px' }}>
+                            <div style={styles.infoCard}>
+                                <strong>회원 정보</strong>
+                                <p>방 번호: {currentRoom?.id}</p>
+                                <p>이름: {currentRoom?.userName}</p>
+                                <p>등급: {currentRoom?.userGrade}</p>
+                                <p>상태: {getBadgeStyle(currentRoom?.status).text}</p>
+                                <p>배정 상담사: {currentRoom?.chatId || '없음'}</p>
+                            </div>
 
-                        <div style={styles.infoCard}>
-                            <strong>지도 영역</strong>
-                            <div style={styles.mapPlaceholder}>[ Kakao Map ]</div>
+                            <div style={styles.infoCard}>
+                                <strong>지도 영역</strong>
+                                <div style={styles.mapPlaceholder}>[ Kakao Map ]</div>
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    <div style={{ textAlign: 'center', color: '#999', marginTop: '50px' }}>
-                        선택된 고객이 없습니다.
-                    </div>
-                )}
+                    ) : (
+                        <div style={{ textAlign: 'center', color: '#999', marginTop: '50px' }}>
+                            선택된 고객이 없습니다.
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -417,17 +467,16 @@ export default function CounselorDashboard() {
 const styles = {
     container: {
         display: 'flex',
-        height: '100vh',
-        fontFamily: '"Apple SD Gothic Neo", "Malgun Gothic", sans-serif',
-        backgroundColor: '#f5f5f5'
+        width: '100%',
+        overflow: 'hidden',
     },
     // 왼쪽 영역
     leftPane: {
-        width: '300px',
-        backgroundColor: 'white',
-        borderRight: '1px solid #ddd',
+        flex: '0 1 clamp(200px, 20vw, 280px)',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        height: '100%',
+        minHeight: '800px',
     },
     paneHeader: {
         padding: '15px 20px',
@@ -438,7 +487,7 @@ const styles = {
     },
     listContainer: {
         overflowY: 'auto',
-        flex: 1
+        flex: 1,
     },
     roomCount: {
         fontWeight: 'normal',
@@ -463,11 +512,12 @@ const styles = {
     },
     // 중앙 영역
     centerPane: {
-        flex: 1,
+        flex: '1 1 0',
         display: 'flex',
         flexDirection: 'column',
-        backgroundColor: '#fff',
-        borderRight: '1px solid #ddd',
+        overflow: 'hidden',
+        height: '100%',
+        minHeight: '800px',
     },
     chatHeader: {
         height: '60px',
@@ -489,6 +539,7 @@ const styles = {
     },
     messageArea: {
         flex: 1,
+        minHeight: 0,
         padding: '20px',
         overflowY: 'auto',
         backgroundColor: '#f9f9f9'
@@ -568,9 +619,12 @@ const styles = {
     },
     // 오른쪽 영역
     rightPane: {
-        width: '350px',
-        backgroundColor: 'white',
-        overflowY: 'auto'
+        flex: '0 1 clamp(220px, 22vw, 320px)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        minHeight: '800px',
     },
     infoCard: {
         backgroundColor: '#fff',
@@ -592,5 +646,11 @@ const styles = {
         fontSize: '14px',
         textAlign: 'center',
         marginTop: '10px'
-    }
+    },
+
+    rightContent: {
+        flex: 1,
+        overflowY: 'auto',
+        padding: '20px'
+    },
 };

@@ -13,6 +13,8 @@ export const accessTokenState = atomWithStorage("accessToken", "", sessionStorag
 //refreshToken
 export const refreshTokenState = atomWithStorage("refreshToken", "", sessionStorage);
 
+export const messageHistoryState = atomWithStorage("messageHistory", [], sessionStorage);
+
 //회원인지 판정
 export const loginState = atom(get => {
     const loginId = get(loginIdState);
@@ -39,6 +41,10 @@ export const clearLoginState = atom(null, (get,set)=>{
     set(loginLevelState,"");
     set(accessTokenState,"");
     set(refreshTokenState,"");
+})
+
+export const clearMessageState = atom(null, (get, set)=>{
+    set(messageHistoryState, "");
 })
 
 // 로그인 판정이 완료되었는지 확인하기 위한 데이터

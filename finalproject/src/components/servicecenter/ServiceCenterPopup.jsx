@@ -17,9 +17,9 @@ export default function ServiceCenterPopup({ isOpen, onClose, onChatConnect }) {
                 </div>
 
                 <div className="card-body p-3">
-                    <button className="btn btn-outline-dark w-100 mb-3 fw-semibold text-start">
+                    {/* <button className="btn btn-outline-dark w-100 mb-3 fw-semibold text-start">
                         <span>💬 채팅으로 문의하기 (AI 챗봇)</span>
-                    </button>
+                    </button> */}
 
                     {/* <button className="btn btn-outline-dark w-100 fw-semibold text-start">
                         <span>🎧 상담사 연결하기</span>

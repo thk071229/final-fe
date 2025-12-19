@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter, Link } from "react-router-dom"
+import { BrowserRouter, Link, useLocation } from "react-router-dom"
 import Menu from "./components/Menu"
 import Footer from "./components/Footer"
 import Content from "./components/Content"
@@ -18,7 +18,7 @@ import { accessTokenState, adminState, clearLoginState, loginCompleteState, logi
 import { useAtom, useAtomValue, useSetAtom } from "jotai"
 import CounselorBlocker from "./components/dashboard/CounselorBlocker"
 import { useEffect } from "react"
-import axios from "axios"
+import axios from "axios" 
 
 function App() {
   const { isPopupOpen, openPopup, closePopup, isChatOpen,
@@ -48,6 +48,34 @@ function App() {
     setLoginComplete(true);
   }, [accessToken, setLoginComplete]);
 
+  //고객센터 버튼 메인에만 보이도록 수정
+  const LocationWrapper = () => {
+    const location = useLocation();
+    if (location.pathname !== "/") return null;
+
+    return (
+      <>
+        <ServiceCenterButton onButtonClick={openPopup} />
+
+        {isPopupOpen && (
+          <ServiceCenterPopup
+            isOpen={isPopupOpen}
+            onClose={closePopup}
+            onChatConnect={openChat}
+          />
+        )}
+
+        {isChatOpen && chatNo && (
+          <ChatSocket
+            isChatOpen={isChatOpen}
+            onChatClose={closeChat}
+            currentChatNo={chatNo}
+          />
+        )}
+      </>
+    );
+  };
+
 
   return (
     <>
@@ -64,22 +92,7 @@ function App() {
           <Footer />
         </div>
 
-        {/* 고객센터 버튼 최상단에 배치 */}
-        <ServiceCenterButton onButtonClick={openPopup} />
-
-        {/* 팝업 열기 */}
-        {isPopupOpen && (
-          <ServiceCenterPopup
-            isOpen={isPopupOpen}
-            onClose={closePopup}
-            onChatConnect={openChat} // 팝업에서 채팅방 생성
-          />
-        )}
-
-        {/* 채팅방 모달 열기 */}
-        {isChatOpen && chatNo && ( // chatNo가 있을 때만 렌더링
-          <ChatSocket isChatOpen={isChatOpen} onChatClose={closeChat} currentChatNo={chatNo} />
-        )}
+        <LocationWrapper />
       </BrowserRouter>
 
       {/* 토스트 메세지 컨테이너 */}

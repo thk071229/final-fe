@@ -15,6 +15,8 @@ export default function CounselorBlocker() {
         const dashboard = location.pathname.startsWith('/counselor/dashboard');
 
         if(counselor && !dashboard) {
+            
+            toast.dismiss();
 
             toast.warn(
                 ` 상담사 계정은 대시보드 외 페이지에 접근할 수 없습니다.`, 
