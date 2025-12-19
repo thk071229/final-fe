@@ -36,8 +36,11 @@ import CounselorDashboard from "./dashboard/CounselorDashboard";
 import Unauthorized from "./error/Unauthorized";
 
 {/* 관리자*/ }
-import AccountManager from "./admin/AccountManeger";
 import AdminHome from "./admin/AdminHome";
+
+import AccountManager from "./admin/account/AccountManeger";
+import AccountSearch from "./admin/account/AccountSearch";
+import AccountDashboard from "./admin/account/AccountDashboard";
 
 import Private from "./guard/Private";
 import Admin from "./guard/Admin";
@@ -63,7 +66,10 @@ export default function Content() {
 
                     {/* 관리자 페이지 */}
                      <Route path="/admin" element={<Admin><AdminHome/></Admin>}>
-                        <Route path="/admin/accounts" element={<Admin><AccountManager/></Admin>}></Route>
+                        <Route path="/admin/accounts" element={<Admin><AccountManager/></Admin>}>
+                            <Route path="/admin/accounts/search" element={<Admin><AccountSearch/></Admin>}></Route>
+                            <Route path="/admin/accounts/dashboard" element={<Admin><AccountDashboard/></Admin>}></Route>
+                        </Route>
                     </Route>
 
                     {/* 카카오페이 관련 */}
