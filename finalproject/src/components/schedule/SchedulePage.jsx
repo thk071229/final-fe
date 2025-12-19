@@ -21,7 +21,7 @@ export default function SchedulePage() {
     const [memberList, setMemberList] = useState([]);
     const [days, setDays] = useState({
         1: {
-            markerIds: [ /* uuid1, uuid2 */],
+            markerIds: [/* uuid1, uuid2 */],
             routes: [
                 /*
                 {
@@ -98,6 +98,13 @@ export default function SchedulePage() {
         }
          */
     ])
+    const { scheduleNo } = useParams();
+    const [scheduleDto, setScheduleDto] = useState({
+        scheduleName : "",
+        schedulePublic : false,
+        scheduleState : "",
+        scheduleNo : scheduleNo
+    })
 
     const PRIORITY_COLORS = {
         RECOMMEND: "#0052FF",
@@ -105,7 +112,20 @@ export default function SchedulePage() {
         DISTANCE: "#00B050"
     };
 
-    const { scheduleNo } = useParams();
+    const changeScheduleValue = useCallback(e=>{
+        const { name, value } = e.target;
+        setScheduleDto(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    }, []);
+
+    const togglePublic = () => {
+        setScheduleDto(prev => ({
+            ...prev,
+            schedulePublic: !prev.schedulePublic // true <-> false 반전
+        }));
+    };
 
     const copyUrl = useCallback(() => {
         navigator.clipboard.writeText(window.location.href)
@@ -256,7 +276,13 @@ export default function SchedulePage() {
     }, [days, setDays, setMarkerData]);
 
     const markerElements = useCallback(() => {
-        return (days[selectedDay].markerIds?.map(id => (
+        const currentDayData = days[selectedDay];
+    
+        // 해당 날짜 데이터나 markerIds가 없으면 아무것도 그리지 않음
+        if (!currentDayData || !currentDayData.markerIds) {
+            return null;
+        }
+        return (currentDayData.markerIds?.map(id => (
             <MapMarker
                 key={id}
                 position={{ lng: markerData[id].x, lat: markerData[id].y }}
@@ -483,17 +509,39 @@ export default function SchedulePage() {
                 days: days, 
                 markerData: markerData 
             }, 
-            scheduleNo: scheduleNo 
+            scheduleDto: {
+                ...scheduleDto,
+                schedulePublic: scheduleDto.schedulePublic? "Y":"N"
+            }
         };
         const { data } = await axios.post("/kakaoMap/insertData", payload)
         console.log(data);
-    }, [days, markerData, scheduleNo])
+        setScheduleDto(prev => ({
+            ...prev,
+            scheduleName: data.scheduleName,
+            scheduleState: data.scheduleState,
+            schedulePublic: data.schedulePublic === "Y"
+        }));
+    }, [days, markerData, scheduleDto])
 
     const loadData = useCallback(async () => {
-        const { data } = await axios.get(`/schedule/detail/${scheduleNo}`)
-        console.log(data);
-        setDays(data.days);
-        setMarkerData(data.markerData);
+        const response = await axios.post(`/schedule/detail`, scheduleDto)
+        const wrapper = response.data; // ScheduleInsertDataWrapperVO 객체
+
+        // 1. 일정 상세 데이터 (days, markerData) 처리
+        if (wrapper.data && wrapper.data.days && Object.keys(wrapper.data.days).length > 0) {
+            setDays(wrapper.data.days);
+            setMarkerData(wrapper.data.markerData);
+        }
+
+        // 2. 일정 기본 정보 (scheduleDto) 처리
+        if (wrapper.scheduleDto) {
+            setScheduleDto({
+                ...wrapper.scheduleDto,
+                // 중요: 서버의 "Y"/"N"을 React 상태인 true/false로 변환
+                schedulePublic: wrapper.scheduleDto.schedulePublic === "Y"
+            });
+        }
     }, [])
 
     // polyline을 가져와서 사용하기 위한 Effect
@@ -581,6 +629,7 @@ export default function SchedulePage() {
         selectType,
         selectSearch,
         sendData,
+        scheduleDto
     };
 
     return (
@@ -599,7 +648,14 @@ export default function SchedulePage() {
 
                     </div>
                     <div className="d-flex detail-box justify-content-center align-items-center">
-                        <div className="d-flex justify-content-center align-items-center box">
+                            <button type="button" 
+                                        className="btn btn-secondary"
+                                        onClick={() => setScheduleDto(prev => ({...prev, schedulePublic: !prev.schedulePublic}))}>
+                                <span>
+                                    {scheduleDto.schedulePublic? "공개":"비공개"}
+                                </span>
+                            </button>
+                        <div className="d-flex justify-content-center align-items-center box ms-2">
                             <span>참여자 : </span>
                             {memberList.map((member) => (
                                 <span className="ms-1" key={member}>{member.scheduleMemberNickname}</span>
@@ -619,6 +675,7 @@ export default function SchedulePage() {
                                 addMarker(mouseEvent.latLng);
                             }}
                         >
+                            
                             {markerElements()}
                             {tempMarkerElements()}
                             {polylineElements()}

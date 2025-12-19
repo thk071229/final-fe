@@ -33,7 +33,7 @@ export default function ScheduleData() {
                                 {/* 날짜별 경로 버튼 */}
                                 <button className="btn btn-sm btn-outline-primary me-2" onClick={(e) => {
                                     e.stopPropagation(); // 부모 클릭 이벤트 방지
-                                    searchAllRoot(dayKey); // 해당 날짜만 검색하도록 파라미터 전달
+                                    searchAllRoot(dayKey, selectedSearch); // 해당 날짜만 검색하도록 파라미터 전달
                                 }}>경로보기</button>
                                 <span className="badge bg-secondary">{days[dayKey].markerIds.length} Places</span>
                             </div>
@@ -58,7 +58,7 @@ export default function ScheduleData() {
             ))}
             <div>
                 <div className="d-grid gap-2">
-                    <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot()}}>
+                    <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot(null, selectedSearch)}}>
                         <FaRoute className="me-2" /> 전체 경로 검색하기
                     </button>
                     <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
