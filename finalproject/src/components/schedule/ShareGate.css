@@ -1,0 +1,171 @@
+/* ===== 전체 모달 ===== */
+.sharegate-modal{
+  border: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f4fbfa 100%
+  );
+  box-shadow: 0 20px 55px rgba(46,196,182,0.25);
+}
+
+/* ===== 헤더 ===== */
+.sharegate-header{
+  border: 0;
+  padding: 20px 20px 16px;
+  background: linear-gradient(
+    135deg,
+    #2EC4B6,
+    #1FA99B
+  );
+}
+
+.sharegate-header .modal-title{
+  font-weight: 900;
+  letter-spacing: -0.3px;
+  color: #ffffff;
+}
+
+.sharegate-subtitle{
+  color: rgba(255,255,255,0.85);
+  font-size: 0.9rem;
+}
+
+/* ===== 바디 ===== */
+.sharegate-body{
+  padding: 20px;
+  background: transparent;
+  color: #243635;
+}
+
+/* ===== TIP 박스 ===== */
+.sharegate-tip{
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-radius: 16px;
+  background: #EAF8F6;
+  border: 1px solid rgba(46,196,182,0.35);
+  font-size: 0.92rem;
+}
+
+.sharegate-tip-badge{
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg,#2EC4B6,#1FA99B);
+  color: white;
+}
+
+/* ===== 닉네임 입력 ===== */
+.sharegate-label{
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #243635;
+}
+
+.sharegate-input{
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid rgba(46,196,182,0.35);
+}
+
+.sharegate-input:focus{
+  border-color: #2EC4B6;
+  box-shadow: 0 0 0 0.25rem rgba(46,196,182,0.25);
+}
+
+/* ===== 구분선 ===== */
+.sharegate-divider{
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(46,196,182,0.5),
+    transparent
+  );
+}
+
+/* ===== 로그인 안내 박스 ===== */
+.sharegate-loginbox{
+  padding: 16px;
+  border-radius: 18px;
+  background: #F1FBF9;
+  border: 1px solid rgba(46,196,182,0.25);
+}
+
+.sharegate-login-title{
+  font-weight: 900;
+  color: #243635;
+}
+
+.sharegate-login-desc{
+  margin-top: 4px;
+  font-size: 0.9rem;
+  color: #6B7C7A;
+}
+
+.sharegate-login-link{
+  display: inline-block;
+  margin-top: 10px;
+  font-weight: 900;
+  color: #1FA99B;
+  text-decoration: none;
+}
+
+.sharegate-login-link:hover{
+  text-decoration: underline;
+}
+
+/* ===== 푸터 ===== */
+.sharegate-footer{
+  border: 0;
+  padding: 16px 20px 20px;
+  background: transparent;
+}
+
+/* ===== 버튼 ===== */
+.sharegate-btn-outline{
+  border-radius: 14px;
+  font-weight: 900;
+  border: 1px solid rgba(46,196,182,0.45);
+  background: rgba(46,196,182,0.12);
+  color: #1FA99B;
+}
+
+.sharegate-btn-outline:hover{
+  background: rgba(46,196,182,0.2);
+}
+
+/* 메인 버튼 */
+.sharegate-btn-primary{
+  border-radius: 14px;
+  font-weight: 900;
+  padding: 11px 18px;
+  border: 0;
+  color: white;
+  background: linear-gradient(
+    135deg,
+    #2EC4B6,
+    #1FA99B
+  );
+  box-shadow: 0 10px 25px rgba(46,196,182,0.4);
+}
+
+.sharegate-btn-primary:disabled{
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+/* 취소 버튼 */
+.sharegate-btn-ghost{
+  border-radius: 14px;
+  font-weight: 800;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid rgba(0,0,0,0.08);
+}

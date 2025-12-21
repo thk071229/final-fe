@@ -30,6 +30,7 @@ export default function Reply() {
     const guestNickname = useAtomValue(guestNicknameState);
     const isGuest = useAtomValue(guestState);
 
+    const [profileUrl, setProfileUrl] = useState("/images/default-profile.jpg");
 
     const cleanData = useCallback(() => {
         setInput("");
@@ -164,14 +165,14 @@ export default function Reply() {
 
     }, [])
 
-const canEdit = (reply) =>
-  // 회원: 로그인한 아이디와 댓글 작성자 accountId 일치
-  (reply.reviewWriterType === "USER" &&
-    reply.accountId === loginId) ||
+    const canEdit = (reply) =>
+        // 회원: 로그인한 아이디와 댓글 작성자 accountId 일치
+        (reply.reviewWriterType === "USER" &&
+            reply.accountId === loginId) ||
 
-  // 비회원: 닉네임으로 비교
-  (reply.reviewWriterType === "GUEST" &&
-    reply.reviewWriterNickname?.trim() === guestNickname?.trim());
+        // 비회원: 닉네임으로 비교
+        (reply.reviewWriterType === "GUEST" &&
+            reply.reviewWriterNickname?.trim() === guestNickname?.trim());
 
 
 
@@ -189,7 +190,7 @@ const canEdit = (reply) =>
 
                     {/* 리스트 */}
                     <div className="reply-list-v3">
-                        {replyList.map((reply) => (
+                        {replyList.map((reply, index) => (
                             <div className="reply-card-v3" key={reply.reviewNo}>
                                 {/* 카드 헤더: 프로필/닉네임/시간 + 액션 */}
                                 <div className="reply-card-head-v3">
@@ -197,16 +198,20 @@ const canEdit = (reply) =>
                                         <div className="reply-avatar-wrap-v3">
                                             <img
                                                 className="reply-avatar-v3"
-                                                src="https://img.freepik.com/free-photo/closeup-shot-cute-golden-retriever-puppy-resting-grass-ground_181624-21135.jpg?semt=ais_hybrid&w=740&q=80"
+                                                src={
+                                                    (reply.attachmentNo ?? reply.attachments?.[0]?.attachmentNo)
+                                                        ? `http://localhost:8080/attachment/download?attachmentNo=${reply.attachmentNo ?? reply.attachments?.[0]?.attachmentNo}`
+                                                        : profileUrl
+                                                }
                                                 alt=""
                                             />
                                         </div>
 
                                         <div className="reply-user-meta-v3">
                                             <div className="reply-writer-v3">{reply.reviewWriterNickname}
-                                                   {reply.reviewWriterType === "GUEST" && (
-      <span className="small ms-1">(비회원)</span>
-    )}
+                                                {reply.reviewWriterType === "GUEST" && (
+                                                    <span className="small ms-1">(비회원)</span>
+                                                )}
                                             </div>
                                             <div className="reply-time-v3">{reply.reviewWtime}</div>
                                         </div>
@@ -235,7 +240,7 @@ const canEdit = (reply) =>
                                     </div>
                                 </div>
 
-                                {/* ✅ 댓글에 포함된 세부일정 태그: "표시만" (선택 state랑 분리) */}
+                                {/* 댓글에 포함된 세부일정 태그: "표시만" (선택 state랑 분리) */}
                                 {editReviewNo !== reply.reviewNo && reply.scheduleUnitNoList?.filter(Boolean).length > 0 && (
                                     <div className="reply-tags-v3">
                                         {reply.scheduleUnitNoList

@@ -1,0 +1,115 @@
+:root{
+  /* 캡처 톤 기반 민트 */
+  --tp-mint: #79c6b5;        /* 메인 민트 */
+  --tp-mint-deep: #56b2a0;   /* hover/강조 */
+  --tp-mint-soft: #e9f6f2;   /* 연민트 배경 */
+  --tp-border: #d9ebe6;      /* 연한 보더 */
+
+  /* 텍스트/배경 */
+  --tp-bg: #f7fbfa;
+  --tp-white: #ffffff;
+  --tp-text: #2f3f3d;
+  --tp-sub: #7a8b88;
+}
+
+/* ===== 공통 카드 ===== */
+.tp-card{
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 12px;              /* 과하게 둥글지 않게 */
+  box-shadow: 0 6px 18px rgba(0,0,0,.05);
+}
+
+/* ===== 상단 주간 버튼 ===== */
+.tp-btn{
+  background: var(--tp-mint);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+.tp-btn:hover{
+  background: var(--tp-mint-deep);
+}
+
+/* ===== 날짜 카드 ===== */
+.tp-day{
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 10px;
+  color: var(--tp-text);
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+}
+.tp-day.selected{
+  background: var(--tp-mint-soft);
+  border-color: rgba(121,198,181,.55);
+}
+.tp-day .tp-day-num{
+  font-weight: 800;
+}
+.tp-day .tp-dot{
+  display:inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(121,198,181,.55);
+}
+
+/* ===== 선택날짜 가로 스크롤 컨테이너 ===== */
+.tp-scroll-wrap{
+  background: var(--tp-mint-soft);
+  border: 1px solid var(--tp-border);
+  border-radius: 14px;
+}
+
+/* ===== 이미지 영역 + 상태 뱃지 ===== */
+.tp-img{
+  position: relative;
+}
+.tp-img img{
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1/1;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.tp-state{
+  position:absolute;
+  top:10px;
+  left:10px;
+  padding: 5px 10px;
+  font-size: .82rem;
+  border-radius: 8px;               /* pill 느낌 X */
+  border: 1px solid var(--tp-border);
+  background: rgba(255,255,255,.9);
+  color: var(--tp-text);
+  backdrop-filter: blur(4px);
+}
+
+/* 상태별: 캡처톤 맞춰서 민트/연민트/그레이 */
+.tp-state-before{
+  background: var(--tp-mint-soft);
+  border-color: rgba(121,198,181,.55);
+  color: #3f877a;
+}
+.tp-state-ongoing{
+  background: var(--tp-mint);
+  border-color: rgba(121,198,181,.55);
+  color: #fff;
+  font-weight: 700;
+}
+.tp-state-ended{
+  background: #f1f4f4;
+  border-color: #e6eded;
+  color: var(--tp-sub);
+}
+
+/* ===== 텍스트 정돈 ===== */
+.tp-title{
+  color: var(--tp-text);
+  letter-spacing: -.2px;
+}
+.tp-meta{
+  color: var(--tp-sub);
+}

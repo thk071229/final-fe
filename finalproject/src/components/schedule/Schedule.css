@@ -727,8 +727,8 @@ textarea.form-control,
 
 /* 선택된 일정 태그 (클릭된 상태) */
 .reply-tags-v3 .btn-outline-secondary.small{
-  background-color: #2dd4bf !important;   /* 쨍한 민트 */
-  border-color: #14b8a6 !important;
+  background-color: #2bb673 !important;   /* TripPlanner 포인트 그린 */
+  border-color: #2bb673 !important;
   color: #ffffff !important;
   font-weight: 600;
 }
@@ -737,7 +737,7 @@ textarea.form-control,
 .reply-tags-v3 .btn.small:focus,
 .reply-tags-v3 .btn.small:focus-visible{
   outline: none;
-  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.35);
+  box-shadow: 0 0 0 3px rgba(43, 182, 115, 0.35); /* 같은 그린 계열 */
 }
 
 .reply-badge-mint{
@@ -750,7 +750,98 @@ textarea.form-control,
   font-size:12px;
   line-height:1;
   font-weight:600;
-  background:#E6FFFA;
-  color:#0F766E;
-  border:1px solid #99F6E4;
+
+  /* TripPlanner 톤으로 교체 */
+  background:#e9faf3;      /* 연민트 */
+  color:#60c095;           /* 그린 텍스트 */
+  border:1px solid #c9f1de;
+}
+
+/* ===== SchedulePage layout skeleton ===== */
+.schedule-page{
+  background:#f6f7f8;
+  min-height: 100vh;
+}
+
+/* 좌측 패널 카드 */
+.panel-card{
+  background:#fff;
+  border:1px solid #e9ecef;
+  border-radius:16px;
+  box-shadow: 0 6px 18px rgba(15,23,42,.06);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+
+/* 패널 상단바 */
+.panel-topbar{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  padding:12px 12px 8px;
+  border-bottom:1px solid #e9ecef;
+  background:#fff;
+}
+
+/* 참여자 영역 */
+.panel-members{
+  padding:10px 12px 6px;
+}
+.panel-label{
+  font-size:12px;
+  font-weight:700;
+  color:#868e96;
+  margin-right:8px;
+}
+.panel-member-chips{
+  margin-top:6px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+.member-chip{
+  display:inline-flex;
+  align-items:center;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  background:#f1f3f5;
+  border:1px solid #e9ecef;
+  color:#495057;
+}
+
+.panel-divider{
+  height:1px;
+  background:#e9ecef;
+}
+
+/* 패널 본문(스크롤) */
+.panel-body{
+  padding:12px;
+  overflow:auto;
+  max-height: calc(100vh - 180px); /* 화면 높이에 따라 자연스럽게 */
+}
+
+/* 지도 카드 */
+.map-card{
+  background:#fff;
+  border:1px solid #e9ecef;
+  border-radius:16px;
+  box-shadow: 0 6px 18px rgba(15,23,42,.06);
+  overflow:hidden;
+  min-height: 520px;
+}
+
+/* 카카오맵 높이 확보 */
+.map-info{
+  width:100%;
+  height: 100%;
+  min-height: 520px;
+}
+
+/* 댓글 영역 래퍼 */
+.reply-card-wrap{
+  background: transparent;
 }

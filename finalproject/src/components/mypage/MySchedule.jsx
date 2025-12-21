@@ -7,6 +7,7 @@ import axios from "axios";
 import { Link, useParams } from "react-router-dom";
 import { useAtom, useAtomValue } from "jotai";
 import { loginIdState } from "../../utils/jotai";
+import "./ScheduleListV3.css";
 
 
 export default function MySchedule() {
@@ -55,114 +56,191 @@ export default function MySchedule() {
     console.log(scheduleDateSet);
   }
 
-    //render
-    return (<>
-        <div className="row mt-5">
-                <div className="col-2 col-md-1 ">
-                  <button className="btn btn-primary p-2 fs-3" onClick={prevWeek}>
-                    <MdNavigateBefore />
-                  </button>
-                </div>
-                <div className=" col-8 col-md-10 d-flex flex-row flex-wrap justify-content-center ">
-                  {week.map((date, index) => {
-        
-                    const dayOfWeek = date.day(); // 0=일, 6=토
-        
-                    //요일에 따른 클래스
-                    const colorClass = dayOfWeek === 0 ? "text-danger" : dayOfWeek === 6 ? "text-primary" : "text-dark";
-                    const todayClass = todayStr === date.format("YYYY-MM-DD") ? "today" : "";
-        
-                    //일정 있는지 확인
-                    const dateStr = date.format("YYYY-MM-DD");
-                    const hasSchedule = scheduleDateSet.has(dateStr);
-        
-                    return (<div className="day-wrapper " key={index}>
-                      <div className="">
-                        {today.format("YYYY-MM-DD") === date.format("YYYY-MM-DD") && (<span className="todayBg badge bg-success">TODAY</span>)}
-                      </div>
-        
-                      <div className={`flex-column fs-4 mx-1 mx-sm-2 mx-lg-4 mx-md-4    ${colorClass} ${todayClass}
-                        ${selectDay === date.format("YYYY-MM-DD") ? "selectday" : ""}`}
-                        onClick={() => todayBtn(date)}>
-                        <div className="px-md-0 px-lg-2">{date.format("DD")}</div>
-                        <div className="px-md-0 px-lg-2">{date.format("dd")}</div>
-                      </div>
-                      {(!hasSchedule && selectDay === dateStr) && (
-                        <button type="button" className="btn btn-secondary" >일정 없음</button>
+  // 상태 뱃지 클래스
+const stateBadgeClass = (state) => {
+  if (state === "약속전") return "tp-state-before";
+  if (state === "진행중") return "tp-state-ongoing";
+  if (state === "종료") return "tp-state-ended";
+  return "";
+};
+
+return (
+  <>
+    {/* ===== 주간 네비게이션 ===== */}
+    <div className="row mt-5 align-items-center">
+      <div className="col-2 col-md-1 d-flex justify-content-start">
+        <button className="btn tp-btn fs-3" onClick={prevWeek} aria-label="이전 주">
+          <MdNavigateBefore />
+        </button>
+      </div>
+
+      <div className="col-8 col-md-10">
+        <div className="d-flex justify-content-center gap-2 gap-md-3 flex-wrap">
+          {week.map((date, index) => {
+            const dateStr = date.format("YYYY-MM-DD");
+            const hasSchedule = scheduleDateSet.has(dateStr);
+            const isSelected = selectDay === dateStr;
+            const isToday = todayStr === dateStr;
+
+            return (
+              <div key={index}>
+                <button
+                  type="button"
+                  className="btn p-0 border-0 bg-transparent"
+                  onClick={() => todayBtn(date)}
+                >
+                  <div style={{ height: 20 }}>
+                    {isToday && <span className="tp-state tp-state-ongoing">TODAY</span>}
+                  </div>
+
+                  <div
+                    className={`px-3 py-2 tp-day ${isSelected ? "selected" : ""}`}
+                    style={{ width: 72 }}
+                  >
+                    <div className="tp-day-num fs-4">{date.format("DD")}</div>
+                    <div className="small">{date.format("dd")}</div>
+
+                    <div className="mt-2 d-flex justify-content-center">
+                      {hasSchedule ? (
+                        <span className="tp-dot" />
+                      ) : (
+                        <span className="tp-dot" style={{ opacity: 0.3 }} />
                       )}
                     </div>
-                    )
-                  })}
-                </div>
-        
-                <div className="col-2 col-md-1">
-                  <button className="btn btn-primary  p-2 fs-3" onClick={nextWeek}>
-                    <MdNavigateNext />
-                  </button>
-                </div>
-              </div>
-        
-              <div className="row d-flex flex-nowrap align-items-center overflow-auto border rounded bg-dark mt-3">
-                {schedule.map((schedule) => (
-                  <>
-                    {selectDay === dayjs(schedule.scheduleStartDate).format("YYYY-MM-DD") && (
-                      <div key={schedule.scheduleNo} className="col-md-6 fs-4 m-2 selectDay ">
-                        <Link to={`/schedulePage/${schedule.scheduleNo}`} className="text-decoration-none text-dark d-inline-block">
-                          <div className="row py-3 card-area mx-1">
-                            <div className="schedule-img col-6">
-                              <span className="schedule-state badge bg-danger border">{schedule.scheduleState}</span>
-                              <img className=" rounded w-100" src="https://www.visitbusan.net/uploadImgs/files/hqimgfiles/20200326112404471_thumbL" />
-                            </div>
-                            <div className="col-6 d-flex flex-column justify-content-center">
-                              <div><h3 className="fw-semibold">{schedule.scheduleName}</h3></div>
-                              <div><span>{schedule.unitFirst?.scheduleUnitContent ? (<>
-                                <span className="">{schedule.unitFirst.scheduleUnitContent}</span> {schedule.unitCount > 1 && `외 ${schedule.unitCount - 1}개`}
-                              </>) : (
-                                "세부 일정 없음"
-                              )}</span></div>
-                              <div className="mt-1"><span>{dayjs(schedule.scheduleStartDate).format("MM/DD(dd) A h:mm")}</span></div>
-                            </div>
-                          </div>
-        
-                        </Link>
-                      </div>
-                    )}
-                  </>
-                ))}
-              </div>
-        
-        
-        
-              <div className="row mt-4 g-2">
-        
-                {schedule.map((schedule) => (
-                  <div key={schedule.scheduleNo} className="col-md-6 fs-4 list schedule-item ">
-                    <Link to={`/schedulePage/${schedule.scheduleNo}`} className="text-decoration-none text-dark ">
-        
-                      <div className="row py-3 card-area mx-1">
-                        <div className="schedule-img col-6">
-                          <span className="schedule-state badge bg-danger border">{schedule.scheduleState}</span>
-                          <img className=" rounded w-100" src="https://www.visitbusan.net/uploadImgs/files/hqimgfiles/20200326112404471_thumbL" />
-                        </div>
-                        <div className="col-6 d-flex flex-column justify-content-center">
-                          <div><h3 className="fw-semibold">{schedule.scheduleName}</h3></div>
-                          <div><span>{schedule.unitFirst?.scheduleUnitContent ? (<>
-                            <span className="">{schedule.unitFirst.scheduleUnitContent}</span> {schedule.unitCount > 1 && `외 ${schedule.unitCount - 1}개`}
-                          </>) : (
-                            "세부 일정 없음"
-                          )}</span></div>
-                          <div className="mt-1"><span>{dayjs(schedule.scheduleStartDate).format("MM/DD(dd) A h:mm")}</span></div>
-                        </div>
-                      </div>
-        
-                    </Link>
                   </div>
-                ))}
-        
-        
-        
-        
-        
+                </button>
               </div>
-    </>)
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="col-2 col-md-1 d-flex justify-content-end">
+        <button className="btn tp-btn fs-3" onClick={nextWeek} aria-label="다음 주">
+          <MdNavigateNext />
+        </button>
+      </div>
+    </div>
+
+    {/* ===== 선택 날짜 가로 스크롤 ===== */}
+    <div className="row mt-3">
+      <div className="col-12">
+        <div className="tp-scroll-wrap p-3">
+          <div className="d-flex flex-nowrap gap-3 overflow-auto">
+            {schedule
+              .filter(
+                (s) => selectDay === dayjs(s.scheduleStartDate).format("YYYY-MM-DD")
+              )
+              .map((s) => (
+                <div key={s.scheduleNo} className="flex-shrink-0" style={{ width: 420 }}>
+                  <Link
+                    to={`/schedulePage/${s.scheduleNo}`}
+                    className="text-decoration-none text-dark d-block"
+                  >
+                    {/* ✅ row/col 말고 flex 카드로 고정 */}
+                    <div className="tp-card shadow-sm p-3 d-flex gap-3 align-items-stretch">
+                      {/* 이미지 */}
+                      <div className="tp-img" style={{ width: 160 }}>
+                        <span className={`tp-state shadow-sm ${stateBadgeClass(s.scheduleState)}`}>
+                          {s.scheduleState}
+                        </span>
+                        <img
+                          className="w-100 border shadow-sm"
+                          src="https://www.visitbusan.net/uploadImgs/files/hqimgfiles/20200326112404471_thumbL"
+                          alt=""
+                        />
+                      </div>
+
+                      {/* 내용 */}
+                      <div className="d-flex flex-column justify-content-center flex-grow-1">
+                        <h5 className="fw-semibold tp-title text-truncate mb-2">
+                          {s.scheduleName}
+                        </h5>
+
+                        <div className="tp-meta small mb-2 text-truncate">
+                          {s.unitFirst?.scheduleUnitContent ? (
+                            <>
+                              {s.unitFirst.scheduleUnitContent}
+                              {s.unitCount > 1 && ` 외 ${s.unitCount - 1}개`}
+                            </>
+                          ) : (
+                            "세부 일정 없음"
+                          )}
+                        </div>
+
+                        <div>
+                          <span className="badge bg-white text-dark border shadow-sm">
+                            {dayjs(s.scheduleStartDate).format("MM/DD(dd) A h:mm")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+
+            {/* 일정 없을 때 */}
+            {schedule.filter(
+              (s) => selectDay === dayjs(s.scheduleStartDate).format("YYYY-MM-DD")
+            ).length === 0 && (
+              <div className="w-100 text-center tp-meta py-4">
+                선택한 날짜에 일정이 없습니다
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* ===== 전체 일정 리스트 ===== */}
+    <div className="row mt-4 g-3">
+      {schedule.map((s) => (
+        <div key={s.scheduleNo} className="col-12 col-md-6">
+          <Link
+            to={`/schedulePage/${s.scheduleNo}`}
+            className="text-decoration-none text-dark d-block h-100"
+          >
+            {/* ✅ 여기서도 row/col 대신 flex 카드 */}
+            <div className="tp-card shadow-sm p-3 d-flex gap-3 h-100 align-items-stretch">
+              <div className="tp-img" style={{ width: 160 }}>
+                <span className={`tp-state shadow-sm ${stateBadgeClass(s.scheduleState)}`}>
+                  {s.scheduleState}
+                </span>
+
+                <img
+                  className="w-100 border shadow-sm"
+                  src="https://www.visitbusan.net/uploadImgs/files/hqimgfiles/20200326112404471_thumbL"
+                  alt=""
+                />
+              </div>
+
+              <div className="d-flex flex-column justify-content-center flex-grow-1">
+                <h5 className="fw-semibold tp-title text-truncate mb-2">
+                  {s.scheduleName}
+                </h5>
+
+                <div className="tp-meta small mb-2 text-truncate">
+                  {s.unitFirst?.scheduleUnitContent ? (
+                    <>
+                      {s.unitFirst.scheduleUnitContent}
+                      {s.unitCount > 1 && ` 외 ${s.unitCount - 1}개`}
+                    </>
+                  ) : (
+                    "세부 일정 없음"
+                  )}
+                </div>
+
+                <div>
+                  <span className="badge bg-white text-dark border shadow-sm">
+                    {dayjs(s.scheduleStartDate).format("MM/DD(dd) A h:mm")}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      ))}
+    </div>
+  </>
+);
 }

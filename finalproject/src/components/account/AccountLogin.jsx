@@ -1,13 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { useAtom } from "jotai";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { accessTokenState, loginIdState, loginLevelState, refreshTokenState } from "../../utils/jotai";
 import TermsModal from "./accountJoin/TermsModal";
-// 경로를 본인 프로젝트 구조에 맞게 수정하세요
 
 export default function AccountLogin() {
-    const navigate = useNavigate();
+    
+const location = useLocation();
+const navigate = useNavigate();
+
+const redirectTo = location.state?.redirectTo || "/";
+
+const onLoginSuccess = () => {
+  navigate(redirectTo, { replace: true });
+};
 
     // 1. Jotai State (전역 상태)
     const [loginId, setLoginId] = useAtom(loginIdState);
@@ -18,7 +25,7 @@ export default function AccountLogin() {
     // 2. 이미 로그인 상태라면 메인으로 리다이렉트
     useEffect(() => {
         if (loginId) {
-            navigate("/", { replace: true });
+            navigate(redirectTo, { replace: true });
         }
     }, [loginId, navigate]);
 
@@ -52,10 +59,10 @@ export default function AccountLogin() {
 
             
             if (data.loginLevel === '상담사') {
-                navigate("/counselor/dashboard");
+                navigate("/counselor/dashboard", { replace: true });
             }
             else {
-                navigate("/");
+                navigate(redirectTo, { replace: true });
             }
             // 메인으로 이동
             //navigate("/");
