@@ -1,16 +1,11 @@
 import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { Link, useNavigate } from "react-router-dom";
 import { accessTokenState, adminState, clearLoginState, loginCompleteState, loginIdState, loginLevelState, loginState } from "../utils/jotai";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
-import { CiCalendar } from "react-icons/ci";
-import dayjs from "dayjs";
+import { CiCalendar, CiUser, CiCreditCard1, CiMap } from "react-icons/ci";
 import TermsModal from "./account/accountJoin/TermsModal";
-
-
-import { toast } from "react-toastify";
 import ScheduleModal from "./schedule/ScheduleModal";
-
 
 export default function Menu() {
   // 이동 도구
@@ -30,6 +25,8 @@ export default function Menu() {
 
   // 일정 모달 열림/닫힘 상태 관리
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  // 약관동의 모달 열림 / 닫힘 상태 관리
+  const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
 
   // 화면이 로딩될 때마다 실행
   useEffect(() => {
@@ -44,7 +41,7 @@ export default function Menu() {
     // 3. 로그인 판정 완료 (로그인이든 아니든 로딩은 끝난 것임)
     setLoginComplete(true);
 
-  }, [accessToken, setLoginComplete]); // clearLogin 의존성 제거
+  }, [accessToken, setLoginComplete]);
 
   //callback
   const closeMenu = useCallback(() => {
@@ -52,7 +49,7 @@ export default function Menu() {
   }, []);
 
   //callback
-  // ★ [핵심 추가] 모달 열기 핸들러
+  // 모달 열기 핸들러
   const openModal = useCallback(() => {
     if (isLogin) {
       setIsScheduleModalOpen(true);
@@ -63,116 +60,281 @@ export default function Menu() {
     }
   }, [isLogin, navigate]);
 
-  // ★ [핵심 추가] 모달 닫기 핸들러
+  // 모달 닫기 핸들러
   const closeModal = useCallback(() => {
     setIsScheduleModalOpen(false);
+    setIsAgreementModalOpen(false);
   }, []);
 
   // 로그아웃
   const logout = useCallback(async (e) => {
-    e.stopPropagation();//더 이상의 이벤트 확산을 금지
-    e.preventDefault();//a태그 기본 동작도 금지
+    e.stopPropagation();
+    e.preventDefault();
 
     clearLogin();
 
     await axios.delete("/account/logout");
-
-    // axios에 설정된 헤더 제거
     delete axios.defaults.headers.common["Authorization"];
-
-    // 메인페이지로 이동
     navigate("/");
-
     closeMenu();
   });
 
+  // --- [디자인] Minty 테마 스타일 객체 ---
+  const styles = {
+    navbar: {
+      backgroundColor: "#ffffff",
+      borderBottom: "1px solid #eef2f5",
+      boxShadow: "0 4px 20px rgba(120, 194, 173, 0.15)", // Minty 그림자
+      padding: "0.8rem 1.5rem",
+      fontFamily: "'Noto Sans KR', sans-serif",
+    },
+    brand: {
+      color: "#78C2AD", // Minty Main Color
+      fontWeight: "800",
+      fontSize: "1.6rem",
+      letterSpacing: "-0.5px",
+      marginRight: "2rem",
+      textDecoration: "none",
+      display: "flex",
+      alignItems: "center",
+      cursor: "pointer"
+    },
+    navLink: {
+      color: "#5a5a5a",
+      fontWeight: "500",
+      fontSize: "1rem",
+      margin: "0 10px",
+      transition: "color 0.2s ease",
+      display: "flex",
+      alignItems: "center",
+      gap: "6px",
+      textDecoration: "none",
+      cursor: "pointer"
+    },
+    activeLink: {
+      color: "#78C2AD",
+      fontWeight: "700",
+    },
+    // "새 일정 만들기" 버튼 스타일
+    ctaButton: {
+      backgroundColor: "#78C2AD",
+      backgroundImage: "linear-gradient(45deg, #78C2AD 0%, #6CC3D5 100%)", // Minty Gradient
+      border: "none",
+      color: "white",
+      padding: "10px 24px",
+      borderRadius: "50px",
+      fontWeight: "600",
+      boxShadow: "0 4px 10px rgba(120, 194, 173, 0.3)",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      fontSize: "1rem",
+      cursor: "pointer"
+    },
+    // 우측 구분선
+    divider: {
+      borderLeft: "2px solid #f0f0f0",
+      paddingLeft: "20px",
+      height: "40px",
+      display: "flex",
+      alignItems: "center"
+    },
+    // ★ 프로필 아이콘 (원형)
+    profileIconBox: {
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      width: "42px",
+      height: "42px",
+      borderRadius: "50%",
+      border: "2px solid #78C2AD",
+      color: "#78C2AD",
+      backgroundColor: "#fff",
+      marginRight: "15px",
+      transition: "all 0.2s ease",
+      textDecoration: "none",
+      boxShadow: "0 2px 8px rgba(120, 194, 173, 0.2)",
+      cursor: "pointer"
+    },
+    logoutText: {
+      color: "#999",
+      textDecoration: "none",
+      fontSize: "0.9rem",
+      fontWeight: "500",
+      display: "flex",
+      alignItems: "center",
+      gap: "4px",
+      cursor: "pointer",
+      padding: "6px 10px",
+      borderRadius: "6px",
+      transition: "all 0.2s"
+    },
+    loginLink: {
+      color: "#78C2AD",
+      fontWeight: "700",
+      border: "2px solid #78C2AD",
+      borderRadius: "30px",
+      padding: "6px 20px",
+      backgroundColor: "transparent",
+      textDecoration: "none",
+      transition: "all 0.3s ease",
+      marginRight: "10px"
+    }
+  };
+
   return (
     <>
-
-      <nav className="navbar navbar-expand-lg bg-body-tertiary">
+      <nav className="navbar navbar-expand-lg sticky-top" style={styles.navbar}>
         <div className="container-fluid">
-          <a className="navbar-brand" href="/">메인</a>
-          <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor04" aria-controls="navbarColor04" aria-expanded="false" aria-label="Toggle navigation">
+          {/* Brand Logo */}
+          <Link className="navbar-brand" to="/" style={styles.brand}>
+            <i className="fa-solid fa-plane-departure" style={{ marginRight: "8px" }}></i>
+            TripPlanner
+          </Link>
+
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarColor04"
+            aria-controls="navbarColor04"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+            style={{ border: "none", color: "#78C2AD" }}
+          >
             <span className="navbar-toggler-icon"></span>
           </button>
+
           <div className="collapse navbar-collapse" id="navbarColor04">
-            <ul className="navbar-nav me-auto">
-              <li className="nav-item">
-                <a className="nav-link active" href="/">Home
-                  <span className="visually-hidden">(current)</span>
-                </a>
+            {/* --- Center Navigation --- */}
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item" onClick={closeMenu}>
+                <Link className="nav-link" to="/" style={styles.navLink}>
+                  홈
+                </Link>
               </li>
-              {isLogin === true ? (<>
-                {/* 로그인 시 나와야 하는 화면 */}
-                <li className="nav-item" onClick={closeMenu}>
-                  <Link className="nav-link" onClick={logout}>
-                    <i className="fa-solid fa-right-to-bracket"></i>
-                    <span>로그아웃</span>
-                  </Link>
-                </li>
-                <li className="nav-item" onClick={closeMenu}>
-                  <Link className="nav-link" to="/mypage">
-                    <i className="fa-solid fa-right-to-bracket"></i>
-                    <span>마이페이지</span>
-                  </Link>
-                </li>
-                <li className="nav-item" onClick={closeMenu}>
-                  <Link className="nav-link" to="#">
-                    <i className="fa-solid fa-user-plus"></i>
-                    <span>{loginId} ({loginLevel})</span>
-                  </Link>
-                </li>
-                <li className="nav-item" onClick={closeMenu}>
-                  <Link className="nav-link" to="/mypage">
-                    <i className="fa-solid fa-user-plus"></i>
-                    <span></span>
-                  </Link>
-                </li>
-              </>) : (<>
-                {/* 비로그인 시 나와야 하는 화면 */}
-                <li className="nav-item" onClick={closeMenu}>
-                  <Link className="nav-link" to="/account/login">
-                    <i className="fa-solid fa-right-to-bracket"></i>
-                    <span>로그인</span>
-                  </Link>
-                </li>
-                <li className="nav-item" onClick={closeMenu}>
-                  {/* TermsModal 안에 "회원가입" 글자와 모달 로직이 다 들어있습니다 */}
-                  <TermsModal />
-                </li>
-              </>)}
-              <li className="nav-item dropdown">
-                <a className="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Dropdown</a>
-                <div className="dropdown-menu">
-                  <a className="dropdown-item" href="#">Action</a>
-                  <a className="dropdown-item" href="#">Another action</a>
-                  <a className="dropdown-item" href="#">Something else here</a>
-                  <div className="dropdown-divider"></div>
-                  <a className="dropdown-item" href="#">Separated link</a>
-                </div>
+              <li className="nav-item" onClick={closeMenu}>
+                <Link className="nav-link" to="#" style={styles.navLink}>
+                  <CiMap style={{ fontSize: "1.2rem" }} /> 추천 일정
+                </Link>
+              </li>
+              <li className="nav-item" onClick={closeMenu}>
+                <Link className="nav-link" to="#" style={styles.navLink}>
+                  <CiCreditCard1 style={{ fontSize: "1.2rem" }} /> 항공/숙소 할인
+                </Link>
               </li>
             </ul>
-            {/* <form className="d-flex">
-        <input className="form-control me-sm-2" type="search" placeholder="Search"/>
-        <button className="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
-      </form> */}
 
-            <button
-              className="btn btn-primary fs-5 d-flex align-items-center justify-content-center lh-1"
-              href="#" type="button" onClick={openModal} >
-              <CiCalendar className="fs-2 me-1" />새일정 등록하기
-            </button>
+            {/* --- Right Side Actions --- */}
+            <div className="d-flex align-items-center flex-wrap gap-2">
+
+              {/* 새 일정 만들기 버튼 (CTA) */}
+              <button
+                className="btn"
+                type="button"
+                onClick={openModal}
+                style={styles.ctaButton}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 6px 15px rgba(120, 194, 173, 0.4)";
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 10px rgba(120, 194, 173, 0.3)";
+                }}
+              >
+                <CiCalendar style={{ fontSize: "1.3rem" }} />
+                <span>새 일정 만들기</span>
+              </button>
+
+              <div className="d-flex align-items-center ms-3" style={styles.divider}>
+                {isLogin === true ? (
+                  <>
+                    {/* ★ 로그인 상태: 텍스트 정보 제거 -> 프로필 아이콘으로 대체 */}
+
+                    {/* 1. 프로필 아이콘 (클릭 시 마이페이지 이동) */}
+                    <Link
+                      to="/mypage"
+                      title="마이페이지로 이동"
+                      style={styles.profileIconBox}
+                      onClick={closeMenu}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#78C2AD";
+                        e.currentTarget.style.color = "#ffffff";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "#ffffff";
+                        e.currentTarget.style.color = "#78C2AD";
+                      }}
+                    >
+                      <CiUser style={{ fontSize: "1.5rem" }} />
+                    </Link>
+
+                    {/* 모바일 화면 대응: 햄버거 메뉴 안에서도 마이페이지 텍스트 링크 보이기 (선택사항, 필요없으면 제거 가능) */}
+                    <Link
+                      to="/mypage"
+                      className="d-lg-none"
+                      style={{ textDecoration: 'none', color: '#555', marginRight: '15px' }}
+                      onClick={closeMenu}
+                    >
+                      마이페이지
+                    </Link>
+
+                    {/* 2. 로그아웃 버튼 */}
+                    <Link
+                      onClick={logout}
+                      style={styles.logoutText}
+                      onMouseOver={(e) => { e.currentTarget.style.color = "#F3969A"; }}
+                      onMouseOut={(e) => { e.currentTarget.style.color = "#999"; }}
+                    >
+                      <i className="fa-solid fa-right-from-bracket"></i>
+                      <span className="d-none d-md-inline">로그아웃</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    {/* 비로그인 상태 */}
+                    <Link
+                      to="/account/login"
+                      onClick={closeMenu}
+                      style={styles.loginLink}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.backgroundColor = "#78C2AD";
+                        e.currentTarget.style.color = "white";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                        e.currentTarget.style.color = "#78C2AD";
+                      }}
+                    >
+                      로그인
+                    </Link>
+
+                    {/* 회원가입 버튼 */}
+                    <div className="ms-1" style={{ transform: "scale(0.95)" }}>
+                      <span
+                        className="nav-link"
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setIsAgreementModalOpen(true)} // 여기서 엽니다
+                      >
+                        회원가입
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       </nav>
 
-      {/* ★ 핵심 수정: 부모(Menu)에서 관리하는 state와 함수를 자식(Modal)에게 전달 */}
-      <ScheduleModal 
+      {/* 모달 컴포넌트 */}
+      <ScheduleModal
         isOpen={isScheduleModalOpen}
         onClose={closeModal}
       />
-
-
+      <TermsModal isOpen={isAgreementModalOpen} onClose={closeModal}/>
     </>
-  )
+  );
 }

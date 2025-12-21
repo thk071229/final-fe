@@ -142,11 +142,11 @@ export default function SchedulePage() {
             schedulePublic: !prev.schedulePublic // true <-> false 반전
         }));
     };
-
-    const copyUrl = useCallback(() => {
-        navigator.clipboard.writeText(window.location.href)
-            .then(() => { toast.success("링크 복사 완료") });
-    }, []);
+    // 중복 변수 선언으로 변수 처리
+    // const copyUrl = useCallback(() => {
+    //     navigator.clipboard.writeText(window.location.href)
+    //         .then(() => { toast.success("링크 복사 완료") });
+    // }, []);
 
     const addMarker = useCallback(async (latlng) => {
         const id = uuidv4();

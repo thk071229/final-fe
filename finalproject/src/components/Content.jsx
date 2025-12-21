@@ -45,6 +45,7 @@ import AccountDashboard from "./admin/account/AccountDashboard";
 
 import Private from "./guard/Private";
 import Admin from "./guard/Admin";
+import Home from "./Home";
 
 export default function Content() {
     return (<>
@@ -88,6 +89,7 @@ export default function Content() {
 
                     {/* 일정 관련 */}
                     <Route path="/scheduleList/" element={<ScheduleList />} />
+                    <Route path="/schedule" element={<Schedule />} />
 
                     {/* 비회원 확인용 */}
                     <Route path="/share/:shareKey" element={<ShareGate/>}></Route>
@@ -100,8 +102,7 @@ export default function Content() {
 
                     <Route path="kakaotest" element={<KakaoMapTest />}></Route>
 
-
-                    <Route path="/schedule" element={<Schedule />} />
+                    
 
                     {/* 마이페이지(중첩 라우팅) */}
                     <Route path="/mypage" element={<MyPage />}>
@@ -111,8 +112,11 @@ export default function Content() {
                         <Route path="wishlist" element={<MyWishList />} />
                     </Route>
 
+                    {/* 디자인 확인을 위해 유지(향후 삭제) */}
+                    <Route path="/example" element={<Main />} />
 
-                    <Route path="/" element={<Main />} />
+                    {/* 메인페이지 이동 */}
+                    <Route path="/" element={<Home/>}></Route>
 
                     {/* 에러 페이지 */}
                     <Route path="/unauthorized" element={<Unauthorized />}></Route>
