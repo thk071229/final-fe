@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { Marker } from "./Marker";
 
 export default function MarkerListSection({ markerIds, routes, markerData, setDays, setMarkerData, selectedDay, selectedType, selectedSearch, removeMarker }) {
-    // id로 마커 찾기
+    // id로 마커 찾기 (DnD용)
     const findMarker = useCallback((id) => {
         const index = markerIds.indexOf(id);
         return { id, index };
@@ -67,27 +67,32 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
         const prevId = markerIds[index - 1];
         const nextId = markerIds[index + 1];
 
-        const prevKey = prevId ? `${prevId}##${id}` : null;
-        const nextKey = nextId ? `${id}##${nextId}` : null;
+        // 2. 경로 검색을 위한 키 생성
+        const prevKey = prevId ? `${prevId}##${id}` : null;   // (이전 -> 현재)
+        const nextKey = nextId ? `${id}##${nextId}` : null;   // (현재 -> 다음)
+
+        const modeRoutes = routes?.[selectedSearch] || {};
+        const activePriority = Object.keys(selectedType).find(key => selectedType[key] === true);
+
+        // 3. 경로 데이터 검색 함수 (키를 받아 해당 배열에서 검색)
+        const findRouteData = (targetKey) => {
+            if (!targetKey || !activePriority || !modeRoutes[activePriority]) return null;
+            return modeRoutes[activePriority].find(r => r.routeKey === targetKey);
+        };
+
+        const prevRoute = findRouteData(prevKey);
+        const nextRoute = findRouteData(nextKey);
 
         const durationForMarker = {
-            prev: prevKey
-                ? routes.find(route => route.routeKey === prevKey && selectedType[route.priority] && route.type === selectedSearch)?.duration
-                : null,
-            next: nextKey
-                ? routes.find(route => route.routeKey === nextKey && selectedType[route.priority] && route.type === selectedSearch)?.duration
-                : null,
+            prev: prevRoute ? prevRoute.duration : null,
+            next: nextRoute ? nextRoute.duration : null,
         };
 
         const distanceForMarker = {
-            prev: prevKey
-                ? routes.find(route => route.routeKey === prevKey && selectedType[route.priority] && route.type === selectedSearch)?.distance
-                : null,
-            next: nextKey
-                ? routes.find(route => route.routeKey === nextKey && selectedType[route.priority] && route.type === selectedSearch)?.distance
-                : null,
+            prev: prevRoute ? prevRoute.distance : null,
+            next: nextRoute ? nextRoute.distance : null,
         };
-        return (<Marker
+            return (<Marker
             key={id}
             id={`${id}`}
             markerData={markerData[id]}
