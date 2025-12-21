@@ -34,9 +34,9 @@ export const adminState = atom(get => {
 
 //비회원인지 판정
 export const guestState = atom(get => {
-    const loginId = get(loginIdState);
+    const guestKey = get(guestKeyState);
     const loginLevel = get(loginLevelState);
-    return loginId === null && loginLevel === "비회원";
+    return guestKey?.length > 0 && loginLevel === "비회원";
 })
 
 //상담사인지 판정 

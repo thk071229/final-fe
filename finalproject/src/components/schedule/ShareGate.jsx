@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { accessTokenState, guestKeyState, loginLevelState } from "../../utils/jotai";
 import { Modal } from "bootstrap";
 import { toast } from "react-toastify";
+import { guestNicknameState } from "../../../../test-kakaopay/src/utils/jotai";
 
 
 
@@ -25,6 +26,7 @@ export function ShareGate() {
     const [scheduleNo, setScheduleNo] = useState(null);
 
     const [nickname, setNickname] = useState("");
+    const setGuestNickname = useSetAtom(guestNicknameState);
 
     const hasGuestToken = accessToken?.length > 0 && loginLevel === "비회원";
 
@@ -44,63 +46,54 @@ export function ShareGate() {
       }, [modal])
 
       //
-      const readShareKey = useCallback(async ()=>{
+useEffect(() => {
+  (async () => {
+    try {
+      const { data } = await axios.post("/share/verify", { shareKey });
+      setScheduleNo(data);
+      // 여기서 "비회원"을 강제로 박아도 되는데, 회원이면 덮어써질 수 있어서 주의
+      // setLoginLevel("비회원");
+    } catch (e) {
+      toast.error("잘못된 경로입니다");
+    }
+  })();
+}, [shareKey]);
 
-            try {
-                const {data} = await axios.post("/share/verify",  {shareKey});
-                console.log("data : ",data);
-                console.log("실행1");
-                setScheduleNo(data);
-                setLoginLevel("비회원");
-                console.log("실행2");
-            } catch (error) {
-                toast.error("잘못된 경로입니다");
-                console.log("실행3");
-            }
-      }, [shareKey, setScheduleNo, setLoginLevel]);
 
       const auth = useCallback(async ()=>{
-         const {data} = await axios.post("/share/auth", {accessToken : accessToken});
+         const {data} = await axios.post("/share/auth", {}, {
+          headers : {Authorization : `Bearer ${accessToken}` }
+         });
          console.log(data);
+         return data;
       }, [accessToken]);
 
-      const  guestToken= useCallback(async ()=>{
-        const {data} = await axios.post("/share/token", {guestKey : guestKey});
-        console.log("토큰 발급 !! ",data);
-        setAccessToken(data.accessToken);
-      }, [guestKey]);
 
+useEffect(() => {
+  if (!scheduleNo) return; // 공유키 검증 끝나기 전이면 대기
 
-    useEffect(()=>{
-
-        (async () => {
-            
-            //공유키 검사
-            await readShareKey();
-            console.log("공유키 검사");
-
-            console.log(hasGuestToken);
-
-        if(hasGuestToken) { //토큰 있으면 검사 후 일정 페이지로
-            await auth();
-            console.log("토큰 있음 실행");
-            navigate(`/schedulePage/${scheduleNo}`);
-
-        }else {// 없으면 닉네임 입력 후 토큰 발행
-            openModal();
-        }
+  if (hasGuestToken) {
+    (async () => {
+      await auth();
+      navigate(`/schedulePage/${scheduleNo}`);
     })();
-    }, []);
+  } else {
+    openModal();
+  }
+}, [scheduleNo, hasGuestToken, auth, navigate, openModal]);
+
 
     const enterGuest = useCallback(async ()=>{
          const {data} = await axios.post("/share/enter",{guestNickname : nickname})
         console.log("접속!");
         console.log(data);
         setGuestKey(data.guestKey);
-        await guestToken();
-        navigate(`/schedulePage/${scheduleNo}`);
+        setAccessToken(data.accessToken);
+        setLoginLevel("비회원");
+        setGuestNickname(data.guestNickname);
+        closeModal();
 
-    }, [guestToken, nickname, scheduleNo]);
+    }, [nickname, scheduleNo, closeModal, navigate, setGuestKey, setAccessToken, setLoginLevel]);
 
 
     return (<>

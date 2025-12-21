@@ -10,12 +10,15 @@ import axios from "axios";
 import KakaoLoader from "../kakaomap/useKakaoLoader";
 import { Map, MapMarker, Polyline } from "react-kakao-maps-sdk";
 import { v4 as uuidv4 } from "uuid";
-import { loginIdState } from "../../utils/jotai";
+import { guestState, loginIdState } from "../../utils/jotai";
 
 
 
 export default function SchedulePage() {
     KakaoLoader()
+
+    const guest = useAtomValue(guestState);
+
 
     const accountId = useAtomValue(loginIdState);
     const [memberList, setMemberList] = useState([]);
@@ -122,6 +125,10 @@ export default function SchedulePage() {
         scheduleNo : scheduleNo
     })
 
+        useEffect(() => {
+  console.log("SchedulePage params scheduleNo =", scheduleNo);
+}, [scheduleNo]);
+
     const PRIORITY_COLORS = {
         RECOMMEND: "#0052FF",
         TIME: "#FF2D2D",
@@ -143,10 +150,7 @@ export default function SchedulePage() {
         }));
     };
 
-    const copyUrl = useCallback(() => {
-        navigator.clipboard.writeText(window.location.href)
-            .then(() => { toast.success("링크 복사 완료") });
-    }, []);
+
 
     const addMarker = useCallback(async (latlng) => {
         const id = uuidv4();
@@ -541,6 +545,13 @@ export default function SchedulePage() {
     }, [days, markerData, scheduleDto])
 
     const loadData = useCallback(async () => {
+
+        console.log("loadData called with scheduleNo =", scheduleNo);
+
+        if(!scheduleNo) {
+            toast.success("확인");
+        }
+
         const response = await axios.post(`/schedule/detail`, scheduleDto)
         const wrapper = response.data; // ScheduleInsertDataWrapperVO 객체
 
@@ -558,7 +569,7 @@ export default function SchedulePage() {
                 schedulePublic: wrapper.scheduleDto.schedulePublic === "Y"
             });
         }
-    }, [])
+    }, [scheduleNo]);
 
     // polyline을 가져와서 사용하기 위한 Effect
     useEffect(() => {
@@ -603,9 +614,11 @@ export default function SchedulePage() {
         loadMember();
     }, [scheduleNo]);
 
-    useEffect(() => {
-        loadData();
-    }, [loadData])
+useEffect(() => {
+  if (!scheduleNo) return; // 안전장치
+  console.log("번호확인", scheduleNo);
+  loadData();
+}, [scheduleNo]);
 
     const currentDayData = days[selectedDay] || { markerIds: [], routes: [] }; // 데이터가 없으면 빈 배열 반환
 
@@ -677,10 +690,13 @@ export default function SchedulePage() {
                                 <span className="ms-1" key={member}>{member.scheduleMemberNickname}</span>
                             ))}
                         </div>
+                       
+                       {guest || (
                         <div className="d-flex justify-content-center align-items-center box ms-2"
                             onClick={copyUrl}>
                             <FaLink /><span className="ms-1 point">일정 공유하기</span>
                         </div>
+                       )}
                     </div>
                     <div className="map-wrapper">
                         <Map

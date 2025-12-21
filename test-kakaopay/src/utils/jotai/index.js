@@ -28,6 +28,9 @@ export const accessTokenState = atomWithStorage("accessTokenState", "", sessionS
 //refreshToken
 export const refreshTokenState = atomWithStorage("refreshToken", "", sessionStorage);
 
+//게스트닉네임
+export const guestNicknameState = atomWithStorage("guestNickname", "", sessionStorage);
+
 // export const loginState = selector({//recoil
 //     key:"loginState",
 //     get: (state)=>{
@@ -83,3 +86,4 @@ accessTokenState.debugLabel = "accessTokenState";
 loginCompleteState.debugLabel = "loginCompleteState";
 refreshTokenState.debugLabel = "refreshTokenState";
 guestState.debugLabel = "guestState";
+guestNicknameState.debugLabel = "guestNicknameState";

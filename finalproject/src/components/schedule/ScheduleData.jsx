@@ -2,8 +2,12 @@ import { useOutletContext } from "react-router-dom";
 import MarkerListSection from "../dnd/MarkerListSection";
 import { FaFloppyDisk, FaFlutter, FaPlus } from "react-icons/fa6";
 import { FaRoute } from "react-icons/fa";
+import { useAtomValue } from "jotai";
+import { guestState } from "../../utils/jotai";
 
 export default function ScheduleData() {
+
+    const guest = useAtomValue(guestState);
 
     const {
         days, // 전체 days 객체
@@ -61,12 +65,14 @@ export default function ScheduleData() {
                     <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot(null, selectedSearch)}}>
                         <FaRoute className="me-2" /> 전체 경로 검색하기
                     </button>
+                    {guest || (<>
                     <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
                         <FaPlus /> 날짜 추가
                     </button>
                     <button className="btn btn-outline-primary w-100" onClick={sendData}>
                         <FaFloppyDisk /> 저장
                     </button>
+                    </>)}
                 </div>
             </div>
         </div>

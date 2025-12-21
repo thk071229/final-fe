@@ -5,6 +5,9 @@ import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import { TiDelete } from "react-icons/ti";
+import { useAtomValue } from "jotai";
+import { accessTokenState, guestKeyState, guestState, loginIdState, loginLevelState } from "../../utils/jotai";
+import { guestNicknameState } from "../../../../test-kakaopay/src/utils/jotai";
 
 
 export default function Reply() {
@@ -21,6 +24,13 @@ export default function Reply() {
     const [hoverIndex, setHoverIndex] = useState(null);
     const [showReviewUnitList, setShowReviewUnitList] = useState([]);
 
+    const accessToken = useAtomValue(accessTokenState);
+    const loginId = useAtomValue(loginIdState);
+    const loginLevel = useAtomValue(loginLevelState);
+    const guestNickname = useAtomValue(guestNicknameState);
+    const isGuest = useAtomValue(guestState);
+
+
     const cleanData = useCallback(() => {
         setInput("");
         setAccountName("");
@@ -32,43 +42,57 @@ export default function Reply() {
     async function loadData() {
 
         try {
+            // 1) 댓글 리스트
             const { data } = await axios.get(`/review/list/${scheduleNo}`);
-            console.log(data);
+            console.log("댓글데이터확인=", data);
             setReplyList(data);
-            setShowUnitList(data[0].scheduleUnitNoList);
+
+            // 2) 대표 일정의 세부일정 리스트(객체 리스트)
+            const { data: unitData } = await axios.get(`/review/unit/list/${scheduleNo}`);
+            console.log("대표일정 세부일정확인=", unitData);
+            setShowUnitList(unitData);
 
         } catch (error) {
-            <h2>대기중</h2>
+            console.log(error);
         }
     };
     useEffect(() => {
         loadData();
+
     }, []);
 
     async function loadReviewUnitList(reviewNo) {
         console.log("숫자" + reviewNo)
         const { data } = await axios.get(`/review/unit/${reviewNo}`);
-        console.log(data);
+        console.log("유닛리스트 데이터확인", data);
         setShowReviewUnitList(data); ''
     }
 
     const sendData = useCallback(async () => {
 
-        cleanData();
+
         try {
             const { data } = await axios.post("/review/insert",
                 {
                     scheduleNo: Number(scheduleNo),
                     scheduleUnitList: scheduleUnitList,
                     reviewContent: input,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
                 }
             );
+            cleanData();
+            console.log("댓글데이터 확인 ", data);
             setAccountName(data.reviewWriterNickname);
             loadData();
             setScheduleUnitList([]);
 
         } catch (error) {
-
+            console.log("insert failed", error?.response?.status, error?.response?.data, error?.message);
+            toast.error("댓글 등록 실패");
         }
 
     }, [scheduleNo, scheduleUnitList, input, replyList])
@@ -86,7 +110,7 @@ export default function Reply() {
             toast.error("실패");
         }
 
-    }, []);
+    }, [scheduleNo, scheduleUnitList, input, accessToken, cleanData]);
 
     const checkScheduleUnitNo = useCallback((scheduleUnitNo) => {
 
@@ -140,125 +164,185 @@ export default function Reply() {
 
     }, [])
 
+const canEdit = (reply) =>
+  // 회원: 로그인한 아이디와 댓글 작성자 accountId 일치
+  (reply.reviewWriterType === "USER" &&
+    reply.accountId === loginId) ||
+
+  // 비회원: 닉네임으로 비교
+  (reply.reviewWriterType === "GUEST" &&
+    reply.reviewWriterNickname?.trim() === guestNickname?.trim());
+
+
+
     return (
         <>
-            {/* 댓글 박스 영역 */}
             <div className="row mt-2">
-                <div className="col-12 border">
-                    {/* 댓글 개수 헤더 */}
-                    <div className="row">
-                        <div className="col-12 m-3">
-                            <span>댓글 {replyList.length}</span>
-                        </div>
-                        {/* <hr /> */}
+                <div className="col-12 reply-wrap-v3">
+                    {/* 헤더 */}
+                    <div className="reply-topbar-v3">
+                        <div className="reply-title-v3">댓글</div>
+                        <div className="reply-count-v3">{replyList.length}개</div>
                     </div>
 
-                    {/* 댓글 한 줄 */}
-                    {replyList.map((reply) => (
-                        <div className="row mt-1" key={reply.reviewNo}>
-                            {/* 프로필 이미지 */}
-                            <div className="col-12 col-sm-5 col-md-4 d-flex justify-content-center">
-                                <img
-                                    className="member-img"
-                                    src="https://img.freepik.com/free-photo/closeup-shot-cute-golden-retriever-puppy-resting-grass-ground_181624-21135.jpg?semt=ais_hybrid&w=740&q=80"
-                                />
-                            </div>
-                            {/* 닉네임 + 내용 */}
-                            {editReviewNo === reply.reviewNo ? (<>
-                                {/* 댓글 수정화면 */}
-                                <div className="col-12 col-sm-7 col-md-8 text-center text-sm-start ">
-                                    {/* <div className="mb-2">
-                                        <span className="fs-6">{reply.reviewWriterNickname}</span>
-                                        <span className="ms-2">({reply.reviewWtime})</span>
-                                        </div> */}
-                                    <div className={`my-3 d-flex align-items-center `}>
+                    <div className="reply-divider-v3" />
+
+                    {/* 리스트 */}
+                    <div className="reply-list-v3">
+                        {replyList.map((reply) => (
+                            <div className="reply-card-v3" key={reply.reviewNo}>
+                                {/* 카드 헤더: 프로필/닉네임/시간 + 액션 */}
+                                <div className="reply-card-head-v3">
+                                    <div className="reply-user-v3">
+                                        <div className="reply-avatar-wrap-v3">
+                                            <img
+                                                className="reply-avatar-v3"
+                                                src="https://img.freepik.com/free-photo/closeup-shot-cute-golden-retriever-puppy-resting-grass-ground_181624-21135.jpg?semt=ais_hybrid&w=740&q=80"
+                                                alt=""
+                                            />
+                                        </div>
+
+                                        <div className="reply-user-meta-v3">
+                                            <div className="reply-writer-v3">{reply.reviewWriterNickname}
+                                                   {reply.reviewWriterType === "GUEST" && (
+      <span className="small ms-1">(비회원)</span>
+    )}
+                                            </div>
+                                            <div className="reply-time-v3">{reply.reviewWtime}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* 버튼 영역 (기능/조건식 그대로) */}
+                                    <div className="reply-actions-v3">
+                                        {canEdit(reply) ? (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    className="reply-action-btn-v3"
+                                                    onClick={() => updateReplyMode(reply)}
+                                                >
+                                                    수정
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="reply-action-btn-v3 danger"
+                                                    onClick={() => deleteReply(reply)}
+                                                >
+                                                    삭제
+                                                </button>
+                                            </>
+                                        ) : null}
+                                    </div>
+                                </div>
+
+                                {/* ✅ 댓글에 포함된 세부일정 태그: "표시만" (선택 state랑 분리) */}
+                                {editReviewNo !== reply.reviewNo && reply.scheduleUnitNoList?.filter(Boolean).length > 0 && (
+                                    <div className="reply-tags-v3">
                                         {reply.scheduleUnitNoList
-                                            ?.filter((unitNo, index) => unitNo)
+                                            .filter(Boolean)
                                             .map((unitNo, index) => (
-                                                <span key={unitNo} value={unitNo}
-                                                    className={`border border-secondary p-1 rounded me-1 small ${hoverIndex === index && "bg-secondary text-white"}`}
-                                                    onClick={(e) => deleteScheduleUnitNo(reply.reviewNo, unitNo)}
-                                                    onMouseEnter={() => setHoverIndex(index)} onMouseLeave={() => setHoverIndex(null)}>
-                                                    {index + 1}번 일정 (#{unitNo})<TiDelete />
+                                                <span key={`${reply.reviewNo}-${unitNo}`} className="reply-badge-mint">
+                                                    {index + 1}번 일정 (#{unitNo})
                                                 </span>
                                             ))}
                                     </div>
-                                    <textarea className="fs-5 form-control no-resize h-60"
-                                        value={editReply} onChange={(e) => { setEditReply(e.target.value) }} />
-                                </div>
-                                <div className="fs-4 text-center text-md-end mt-2">
-                                    <button className="btn btn-primary ms-2 " onClick={() => sendUpdateReply(reply)}>저장</button>
-                                    <button className="btn btn-warning ms-2 " onClick={() => setEditReviewNo(null)}>취소</button>
-                                </div>
-                            </>
-                            ) : (
-                                <>
-                                    <div className="col-12 col-sm-7 col-md-8 text-center text-sm-start mt-2 ">
-                                        <div className="mb-2">
-                                            <span className="fs-6">{reply.reviewWriterNickname}</span>
-                                            <span className="ms-2">({reply.reviewWtime})</span>
-                                        </div>
-                                        <div>
+                                )}
+
+
+                                {/* 내용 or 수정모드 (기존 기능 유지) */}
+                                {editReviewNo === reply.reviewNo ? (
+                                    <>
+                                        {/* 수정모드: 삭제 pill (기존 기능 유지: deleteScheduleUnitNo + hoverIndex) */}
+                                        <div className="reply-pills-v3 edit">
                                             {reply.scheduleUnitNoList
                                                 ?.filter((unitNo, index) => unitNo)
                                                 .map((unitNo, index) => (
-                                                    <span key={unitNo} className="border border-secondary p-1 rounded me-1 small" value={unitNo}
-                                                        onClick={(e) => checkScheduleUnitNo(e.target.value)}>
-                                                        {index + 1}번 일정 (#{unitNo})
+                                                    <span
+                                                        key={`${reply.reviewNo}-${unitNo}`}
+                                                        className={`reply-pill-v3 danger ${hoverIndex === index ? "is-hover" : ""
+                                                            }`}
+                                                        onClick={() => deleteScheduleUnitNo(reply.reviewNo, unitNo)}
+                                                        onMouseEnter={() => setHoverIndex(index)}
+                                                        onMouseLeave={() => setHoverIndex(null)}
+                                                    >
+                                                        {index + 1}번 일정 (#{unitNo}) <TiDelete />
                                                     </span>
                                                 ))}
                                         </div>
-                                        <div className="mt-2">
-                                            <span className="fs-5">{reply.reviewContent}</span>
+
+                                        <div className="reply-editbox-v3">
+                                            <textarea
+                                                className="reply-textarea-v3"
+                                                value={editReply}
+                                                onChange={(e) => setEditReply(e.target.value)}
+                                            />
+                                            <div className="reply-edit-actions-v3">
+                                                <button
+                                                    type="button"
+                                                    className="reply-btn-v3 primary"
+                                                    onClick={() => sendUpdateReply(reply)}
+                                                >
+                                                    저장
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="reply-btn-v3"
+                                                    onClick={() => setEditReviewNo(null)}
+                                                >
+                                                    취소
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="fs-4 text-center text-md-end">
-                                        <button className="btn btn-primary ms-2 " onClick={() => updateReplyMode(reply)}>수정</button>
-                                        <button className="btn btn-warning ms-2 " onClick={() => deleteReply(reply)}>삭제</button>
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                ) : (
+                                    <div className="reply-content-v3">{reply.reviewContent}</div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
 
-                            {/* 구분선 */}
-                            <hr className="divider mt-3 " />
-                        </div>
-
-                    ))}
-
-                    {/* 아래 일정 리스트 영역 */}
-                    <div className="row ">
-                        <div className="col m-110 d-flex gap-2 flex-wrap">
+                    {/* 아래 일정 리스트 (기존 기능 유지) */}
+                    <div className="reply-selectwrap-v3">
+                        <div className="reply-select-title-v3">일정 선택</div>
+                        <div className="reply-select-list-v3">
                             {showunitList.map((unit, index) => {
                                 const isSelect = scheduleUnitList.includes(unit.scheduleUnitNo);
-                                return (<>
-                                    {showunitList.length === 0 && (<>
-                                        <button
-                                            type="button"
-                                            key={unit.scheduleUnitNo} className={`btn small ${isSelect ? "btn-outline-secondary" : "btn-secondary"}`}
-                                            onClick={() => {
-                                                checkScheduleUnitNo(unit.scheduleUnitNo)
-                                            }} >
-
-                                            {index + 1}번 일정 (#{unit.scheduleUnitNo})
-                                        </button>
-
-                                    </>)}
-                                </>)
+                                return (
+                                    <button
+                                        type="button"
+                                        key={unit.scheduleUnitNo}
+                                        className={`reply-unit-btn-v3 ${isSelect ? "selected" : ""}`}
+                                        onClick={() => {
+                                            checkScheduleUnitNo(unit.scheduleUnitNo);
+                                        }}
+                                    >
+                                        {index + 1}번 일정 (#{unit.scheduleUnitNo})
+                                    </button>
+                                );
                             })}
                         </div>
                     </div>
-                    <div className="row mt-1">
-                        <div className="col d-flex align-items-center gap-2 m-2">
-                            <button className="btn btn-primary text-nowrap p-3 fs-6">사진</button>
-                            <input className="form-control py-3 m-2"
-                                value={input} onChange={(e) => setInput(e.target.value)} />
-                            <button
-                                className="btn btn-primary text-nowrap p-3 fs-6"
-                                onClick={sendData}>등록</button>
-                        </div>
+
+
+                    {/* 입력 바 (기존 기능 유지) */}
+                    <div className="reply-inputbar-v3">
+                        {!isGuest && (
+                            <button type="button" className="reply-btn-v3 ghost">
+                                사진
+                            </button>
+                        )}
+                        <input
+                            className="reply-input-v3"
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                        />
+                        <button type="button" className="reply-btn-v3 primary" onClick={sendData}>
+                            등록
+                        </button>
                     </div>
                 </div>
             </div>
         </>
     );
+
 }

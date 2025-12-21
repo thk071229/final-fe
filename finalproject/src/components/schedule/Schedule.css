@@ -186,3 +186,571 @@ border: 2px solid #dee2e6;
   height: 750px;
   overflow: scroll;
 }
+/* ===== Reply (JSX 수정 없이 적용) ===== */
+
+/* 전체 카드 박스 */
+.row.mt-2 > .col-12.border {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.10) !important;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+/* 상단 댓글 개수 영역 */
+.row.mt-2 > .col-12.border > .row:first-child .col-12.m-3 {
+  margin: 0 !important;
+  padding: 8px 4px 14px 4px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.row.mt-2 > .col-12.border > .row:first-child span {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: #0f172a;
+}
+
+/* 댓글 한 덩어리 */
+.row.mt-1[key],
+.row.mt-1 {
+  padding: 14px 4px;
+}
+
+/* 댓글 프로필 이미지 */
+.member-img {
+  width: 86px;
+  height: 86px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.10);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+/* 닉네임/시간 */
+.col-12.col-sm-7.col-md-8 .mb-2 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.col-12.col-sm-7.col-md-8 .mb-2 .fs-6 {
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.col-12.col-sm-7.col-md-8 .mb-2 .ms-2 {
+  font-size: 12px;
+  color: rgba(15, 23, 42, 0.55);
+}
+
+/* 일정 태그(유닛 표시) */
+.border.border-secondary.p-1.rounded.me-1.small {
+  border: 1px solid rgba(99, 102, 241, 0.25) !important;
+  background: rgba(99, 102, 241, 0.07);
+  color: #1e293b;
+  border-radius: 999px !important;
+  padding: 6px 10px !important;
+  font-weight: 600;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+
+.border.border-secondary.p-1.rounded.me-1.small:hover {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.40) !important;
+  transform: translateY(-1px);
+}
+
+/* 수정모드에서 삭제 hover 효과(이미 클래스가 들어오면 적용됨) */
+.bg-secondary.text-white {
+  background: rgba(239, 68, 68, 0.92) !important;
+  color: #fff !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+/* 댓글 내용 */
+.col-12.col-sm-7.col-md-8 .mt-2 .fs-5 {
+  color: rgba(15, 23, 42, 0.88);
+  line-height: 1.55;
+}
+
+/* 구분선 */
+.divider.mt-3 {
+  border: none !important;
+  border-top: 1px solid rgba(15, 23, 42, 0.08) !important;
+  margin: 16px 0 0 0 !important;
+}
+
+/* 버튼 공통(부트스트랩 느낌은 살리고 좀 더 깔끔하게) */
+.btn {
+  border-radius: 10px !important;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  box-shadow: none !important;
+}
+
+/* 수정/삭제 버튼 영역 정렬 */
+.fs-4.text-center.text-md-end {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* Primary 버튼 색감 업그레이드 */
+.btn.btn-primary {
+  background: linear-gradient(135deg, #4f46e5, #6366f1) !important;
+  border: none !important;
+}
+
+.btn.btn-primary:hover {
+  filter: brightness(0.98);
+  transform: translateY(-1px);
+}
+
+/* Warning 버튼을 '삭제/주의' 느낌으로 정돈 */
+.btn.btn-warning {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+.btn.btn-warning:hover {
+  background: rgba(15, 23, 42, 0.09) !important;
+}
+
+/* 수정 textarea */
+textarea.form-control,
+.fs-5.form-control.no-resize.h-60 {
+  border-radius: 12px !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  padding: 12px !important;
+}
+
+/* 하단 '일정 선택 버튼들' 컨테이너 */
+.col.m-110.d-flex.gap-2.flex-wrap {
+  padding: 12px 4px 4px 4px;
+}
+
+/* 일정 선택 버튼 */
+.btn.small {
+  border-radius: 999px !important;
+  padding: 10px 12px !important;
+  font-weight: 700;
+}
+
+.btn.btn-secondary.small {
+  background: rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+.btn.btn-outline-secondary.small {
+  border: 1px solid rgba(99, 102, 241, 0.45) !important;
+  color: #4f46e5 !important;
+}
+
+/* 입력 바 영역 (사진/인풋/등록) */
+.row.mt-1 > .col.d-flex.align-items-center.gap-2.m-2 {
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  padding-top: 14px;
+  margin-top: 10px !important;
+}
+
+.row.mt-1 .form-control.py-3.m-2 {
+  border-radius: 12px !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+}
+
+/* 등록 버튼 */
+.row.mt-1 .btn.btn-primary.text-nowrap.p-3.fs-6 {
+  padding: 12px 16px !important;
+  min-width: 84px;
+}
+
+/* 모바일에서 이미지/텍스트 간격 */
+@media (max-width: 576px) {
+  .member-img {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+  }
+  .fs-4.text-center.text-md-end {
+    justify-content: center;
+  }
+}
+
+/*댓글 디자인*/
+
+/* =========================
+   Reply v3 (캡처 느낌 카드 UI)
+========================= */
+
+/* 전체 랩 */
+.reply-wrap-v3{
+  background: #f6f7f8;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  padding: 18px;
+}
+
+/* 상단 바 */
+.reply-topbar-v3{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.reply-title-v3{
+  font-weight: 700;
+  font-size: 15px;
+  color: #212529;
+}
+.reply-count-v3{
+  font-size: 12px;
+  color: #868e96;
+}
+
+/* 구분선 */
+.reply-divider-v3{
+  height: 1px;
+  background: #e9ecef;
+  margin: 14px 0 16px;
+}
+
+/* 리스트 */
+.reply-list-v3{
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 카드 */
+.reply-card-v3{
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+/* 카드 헤더 */
+.reply-card-head-v3{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.reply-user-v3{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.reply-avatar-wrap-v3{
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  flex: 0 0 64px;
+}
+
+.reply-avatar-v3{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.reply-user-meta-v3{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.reply-writer-v3{
+  font-weight: 700;
+  font-size: 14px;
+  color: #212529;
+}
+.reply-time-v3{
+  font-size: 12px;
+  color: #8a8f98;
+}
+
+/* 액션 버튼 (작고 담백) */
+.reply-actions-v3{
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.reply-action-btn-v3{
+  border: 1px solid #e9ecef;
+  background: #fff;
+  color: #495057;
+  font-size: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.reply-action-btn-v3:hover{
+  background: #f1f3f5;
+}
+.reply-action-btn-v3.danger{
+  border-color: #f3c5cc;
+  color: #b02a37;
+}
+.reply-action-btn-v3.danger:hover{
+  background: #fff1f3;
+}
+
+/* 태그 라인 (캡처의 연민트 pill) */
+.reply-tags-v3{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+.reply-tag-v3{
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+
+  background: #e9faf3;
+  color: #1e9c6a;
+  border: 1px solid #c9f1de;
+}
+
+/* 일정 pill */
+.reply-pills-v3{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reply-pill-v3{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+
+  background: #f1f3f5;
+  border: 1px solid #e9ecef;
+  color: #495057;
+
+  cursor: pointer;
+  user-select: none;
+}
+.reply-pill-v3:hover{
+  background: #eceff1;
+}
+
+/* 수정모드 삭제 pill */
+.reply-pills-v3.edit .reply-pill-v3.danger{
+  background: #fff1f3;
+  border: 1px solid #f3c5cc;
+  color: #b02a37;
+}
+.reply-pill-v3.danger:hover,
+.reply-pill-v3.danger.is-hover{
+  background: #ffe7ea;
+}
+
+/* 본문 */
+.reply-content-v3{
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #212529;
+  white-space: pre-wrap;
+}
+
+/* 수정 영역 */
+.reply-editbox-v3{
+  margin-top: 12px;
+}
+.reply-textarea-v3{
+  width: 100%;
+  min-height: 92px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+  resize: vertical;
+}
+.reply-textarea-v3:focus{
+  border-color: #cbd3da;
+}
+
+/* 수정 버튼 */
+.reply-edit-actions-v3{
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 하단 일정 선택 영역 */
+.reply-selectwrap-v3{
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e9ecef;
+}
+.reply-select-title-v3{
+  font-size: 12px;
+  color: #868e96;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.reply-select-list-v3{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 일정 선택 버튼 */
+.reply-unit-btn-v3{
+  border: 1px solid #e9ecef;
+  background: #fff;
+  color: #495057;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.reply-unit-btn-v3:hover{
+  background: #f1f3f5;
+}
+.reply-unit-btn-v3.selected{
+  background: #495057;
+  border-color: #495057;
+  color: #fff;
+}
+
+/* 입력 바 */
+.reply-inputbar-v3{
+  margin-top: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  background: #fff;
+  border: 1px solid #e9ecef;
+  border-radius: 14px;
+  padding: 10px;
+}
+
+.reply-input-v3{
+  flex: 1;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  outline: none;
+}
+.reply-input-v3:focus{
+  border-color: #cbd3da;
+}
+
+/* 공용 버튼 */
+.reply-btn-v3{
+  border: 1px solid #e9ecef;
+  background: #fff;
+  color: #495057;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.reply-btn-v3:hover{
+  background: #f1f3f5;
+}
+.reply-btn-v3.primary{
+  background: #212529;
+  border-color: #212529;
+  color: #fff;
+}
+.reply-btn-v3.primary:hover{
+  background: #343a40;
+  border-color: #343a40;
+}
+.reply-btn-v3.ghost{
+  background: #fff;
+}
+
+/* 모바일 */
+@media (max-width: 576px){
+  .reply-wrap-v3{ padding: 14px; }
+  .reply-card-v3{ padding: 14px; }
+  .reply-avatar-wrap-v3{ width: 44px; height: 44px; flex-basis: 44px; }
+  .reply-inputbar-v3{ flex-wrap: wrap; }
+  .reply-btn-v3{ padding: 9px 10px; font-size: 12px; }
+}
+
+/* ===== 댓글 일정 태그 : 민트 강조 ===== */
+.reply-tags-v3{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 기본 태그 */
+.reply-tags-v3 .btn.small{
+  padding: 6px 11px;
+  font-size: 12px;
+  border-radius: 999px;
+
+  background-color: #e6fffa !important;   /* 민트 배경 */
+  border: 1px solid #5eead4 !important;   /* 민트 테두리 */
+  color: #0f766e !important;              /* 민트 텍스트 */
+
+  box-shadow: none;
+  transition: all .15s ease;
+}
+
+/* hover */
+.reply-tags-v3 .btn.small:hover{
+  background-color: #ccfbf1 !important;
+  border-color: #2dd4bf !important;
+  color: #115e59 !important;
+  transform: translateY(-1px);
+}
+
+/* 선택된 일정 태그 (클릭된 상태) */
+.reply-tags-v3 .btn-outline-secondary.small{
+  background-color: #2dd4bf !important;   /* 쨍한 민트 */
+  border-color: #14b8a6 !important;
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* 포커스 테두리 */
+.reply-tags-v3 .btn.small:focus,
+.reply-tags-v3 .btn.small:focus-visible{
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.35);
+}
+
+.reply-badge-mint{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 8px;
+  margin:0 6px 6px 0;
+  border-radius:999px;
+  font-size:12px;
+  line-height:1;
+  font-weight:600;
+  background:#E6FFFA;
+  color:#0F766E;
+  border:1px solid #99F6E4;
+}
