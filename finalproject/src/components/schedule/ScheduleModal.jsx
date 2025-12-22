@@ -17,7 +17,7 @@ export default function ScheduleModal({ isOpen, onClose }) {
 
     const [scheduleName, setScheduleName] = useState("");
     const [startDate, setStartDate] = useState(dayjs().format("YYYY-MM-DDTHH:mm"));
-    const [endDate, setEndDate] = useState(dayjs().format("YYYY-MM-DDTHH:mm"));
+    const [endDate, setEndDate] = useState(null);
     const [checked, setChecked] = useState(false);
 
     const [tags, setTags] = useState([]);
@@ -71,8 +71,11 @@ export default function ScheduleModal({ isOpen, onClose }) {
         formData.append("scheduleName", scheduleName);
         formData.append("scheduleOwner", loginId);
         formData.append("scheduleStartDate", dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss"));
-        formData.append("scheduleEndDate", checked ? dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss") : dayjs(startDate).format("YYYY-MM-DDTHH:mm:ss"));
-        formData.append("tagNoList", selectTag);
+        if (checked) {
+        formData.append("scheduleEndDate", dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss"));}
+        console.log("데이터 보냄!!!");
+        
+         formData.append("tagNoList", selectTag);
 
         if (file) {// 파일이 있으면 전송 목록에 추가
             formData.append("attach", file);
@@ -93,6 +96,7 @@ export default function ScheduleModal({ isOpen, onClose }) {
         try {
             await axios.post("http://localhost:8080/schedule/insert", formData);
             alert(`[${formData.get('scheduleName')}] 일정이 등록되었습니다!`);
+            console.log("SAVE 데이터 =", formData);
             onClose();
         } catch (error) {
             console.error("등록 에러:", error);
@@ -101,6 +105,7 @@ export default function ScheduleModal({ isOpen, onClose }) {
     }, [scheduleName, startDate, endDate, checked, selectTag, onClose, isLogin, loginId]);
 
     if (!isOpen) return null;
+
 
     return (
         <>
