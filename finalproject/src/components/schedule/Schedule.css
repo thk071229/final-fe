@@ -878,7 +878,6 @@ textarea.form-control,
 /* 제목 및 날씨 섹션 */
 .schedule-header {
     background: #f8fafb;
-    border-radius: 12px;
     padding: 15px;
     margin: 20px 0;
 }
@@ -906,7 +905,6 @@ textarea.form-control,
 .btn-option {
     border-radius: 8px;
     font-size: 0.85rem;
-    padding: 6px 15px;
     margin: 0 4px;
     border: 1px solid #eee;
     background-color: #fff;

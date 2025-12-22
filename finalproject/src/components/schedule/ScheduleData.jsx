@@ -69,14 +69,14 @@ export default function ScheduleData() {
             {isOwner && (
                 <div>
                     <div className="d-grid gap-2">
-                        <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot(null)}}>
+                        <button className="btn w-100 mb-2" onClick={(e) => {searchAllRoot(null)}}>
                             <FaRoute className="me-2" /> 전체 경로 검색하기
                         </button>
                         {guest || (<>
-                        <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
+                        <button className="btn w-100 mb-2" onClick={addDays}>
                             <FaPlus /> 날짜 추가
                         </button>
-                        <button className="btn btn-outline-primary w-100" onClick={sendData}>
+                        <button className="btn w-100" onClick={sendData}>
                             <FaFloppyDisk /> 저장
                         </button>
                         </>)}

@@ -1,0 +1,220 @@
+/* =========================
+   🌿 Trip / Mint Theme (FINAL)
+   구조 변경 ❌ / 색만 통일
+========================= */
+
+/* 컬러 시스템 */
+:root {
+  --mint-main: #78C2AD;
+  --mint-soft: #EAF6F3;
+  --mint-border: #BFE5DA;
+  --mint-text: #4FAE97;
+  --gray-text: #6B7280;
+}
+
+
+/* .schedule-title {
+  font-weight: 700;
+  color: #1f2937;
+} */
+
+/* ===== 탭 버튼 (리스트 / 검색) ===== */
+.tab-group .tab-active {
+  background-color: var(--mint-main);
+  color: white;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.tab-group .tab-inactive {
+  background-color: #F9FAFB;
+  color: var(--gray-text);
+  border-radius: 12px;
+}
+
+/* ===== 이동 수단 / 경로 옵션 버튼 ===== */
+.btn-option {
+  background: #ffffff;
+  border: 1px solid var(--mint-border);
+  color: var(--mint-text);
+  border-radius: 14px;
+
+.btn-option.active {
+  background: var(--mint-soft);
+  border-color: var(--mint-main);
+  color: var(--mint-main);
+  font-weight: 600;
+
+}
+}
+
+/* ===== Day / i day / + 버튼 ===== */
+.day-pill,
+.reply-unit-btn-v3 {
+  background: var(--mint-soft);
+  color: var(--mint-text);
+  border: 1px solid var(--mint-border);
+  border-radius: 999px;
+}
+
+.day-pill.active {
+  background: var(--mint-main);
+  color: white;
+  border-color: var(--mint-main);
+}
+
+/* ===== 댓글 / 후기 카드 ===== */
+.reply-card-v3,
+.review-card {
+  background: #ffffff;
+  border: 1px solid var(--mint-border);
+  border-radius: 16px;
+}
+
+.reply-badge-mint {
+  background: var(--mint-soft);
+  color: var(--mint-text);
+  border-radius: 999px;
+}
+
+/* ===== 공통 텍스트 정리 ===== */
+.option-group-label {
+  color: var(--gray-text);
+  font-weight: 500;
+}
+
+/* =========================
+   🌿 하단 액션 버튼 (전체경로 / 날짜추가 / 저장)
+   JSX 수정 ❌
+========================= */
+
+/* 공통 래퍼 */
+.all-schedule-container .d-grid.gap-2 > .btn {
+  border-radius: 16px;
+  font-weight: 700;
+  padding: 8px 10px;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+/* 1️⃣ 전체 경로 검색하기 (메인 민트) */
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(1) {
+  background: #fdffff;
+  border: 1.5px solid #61cbe6;
+  color: #258ace;
+}
+
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(1):hover {
+  background: #399bdd;
+  color: #D6F5EE;
+  border-color: #3bbbdb;
+}
+
+/* 2️⃣ 날짜 추가 (연한 민트) */
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(2) {
+  background: #E9FBF6;
+  border: 1.5px solid #9bdce5;
+  color: #1e828f;
+}
+
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(2):hover {
+  background: #D6F5EE;
+  border-color: #5FD1B8;
+}
+
+/* 3️⃣ 저장 (진한 민트) */
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(3) {
+  background: #47bda7;
+  border: 1.5px solid #2FB59C;
+  color: #ffffff;
+}
+
+.all-schedule-container .d-grid.gap-2 > .btn:nth-of-type(3):hover {
+  background: #1E8F79;
+  border-color: #1E8F79;
+}
+
+
+/* 오른쪽 상태 라벨: 동그랗게 떠있는 느낌 X */
+.schedule-state-line {
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: #5FD1B8;
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.78rem;
+  border: 1px solid #37BFA6;
+}
+
+/* =========================
+   이동수단/경로옵션 섹션 카드 + 구분선
+========================= */
+.triple-section {
+  background: #ffffff;
+  border: 1px solid #D7F5EE;
+  border-radius: 18px;
+  padding: 14px 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+.triple-divider {
+  border: 0;
+  height: 1px;
+  background: #D7F5EE;
+  margin: 14px 8px;
+}
+
+/* =========================
+   칩 버튼 (테두리 확실 + hover 진해짐)
+========================= */
+.triple-chip-group {
+  gap: 10px;
+}
+
+.triple-chip-group--wide {
+  flex-wrap: nowrap;       /* 한 줄 유지 */
+}
+
+@media (max-width: 420px) {
+  .triple-chip-group--wide {
+    flex-wrap: wrap;       /* 화면이 너무 좁으면 자연스럽게 줄바꿈 */
+  }
+}
+
+.btn-option.triple-chip {
+  background: #ffffff;
+  border: 1.6px solid #9BE5D4; /* 테두리 확실 */
+  color: #1E8F79;
+  border-radius: 14px;
+  font-weight: 500;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-option.triple-chip:hover {
+  background: #DFF8F1;         /* hover 시 진해짐 */
+  border-color: #5FD1B8;
+  color: #147A66;
+}
+
+.btn-option.triple-chip.active {
+  background: #5FD1B8;
+  border-color: #2FB59C;
+  color: #ffffff;
+}
+
+.option-group-label.triple-label {
+  color: #0f766e;
+  font-weight: 500;
+}
+
+/* 상태: 동그랗게 분리 ❌ / 일자 라벨 ⭕ */
+.schedule-state-line {
+  padding: 6px 12px;
+  border-radius: 10px;
+  background: #5FD1B8;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  border: 1px solid #2FB59C;
+  white-space: nowrap;
+}

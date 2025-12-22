@@ -338,11 +338,6 @@ console.log("리스트확인",memberList);
 
                     {/* 입력 바 (기존 기능 유지) */}
                     <div className="reply-inputbar-v3">
-                        {!isGuest && (
-                            <button type="button" className="reply-btn-v3 ghost">
-                                사진
-                            </button>
-                        )}
                         <input
                             className="reply-input-v3"
                             value={input}
