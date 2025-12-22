@@ -3,11 +3,12 @@ import MarkerListSection from "../dnd/MarkerListSection";
 import { FaFloppyDisk, FaFlutter, FaPlus } from "react-icons/fa6";
 import { FaRoute } from "react-icons/fa";
 import { useAtomValue } from "jotai";
-import { guestState } from "../../utils/jotai";
+import { guestState, loginIdState } from "../../utils/jotai";
 
 export default function ScheduleData() {
 
     const guest = useAtomValue(guestState);
+    const loginId = useAtomValue(loginIdState);
 
     const {
         days, // 전체 days 객체
@@ -22,6 +23,8 @@ export default function ScheduleData() {
         sendData,
         selectedType,
         selectedSearch,
+        scheduleDto,
+        isOwner
     } = useOutletContext();
 
     return (<>
@@ -33,14 +36,16 @@ export default function ScheduleData() {
                         <div className="p-2 border-start border-primary border-4 bg-light d-flex justify-content-between align-items-center"
                             onClick={() => setSelectedDay(dayKey)}>
                             <span className="fw-bold fs-5 text-primary">{dayKey} DAY</span>
+                            {/* 날짜별 경로 버튼 */}
+                            {isOwner && (
                             <div>
-                                {/* 날짜별 경로 버튼 */}
                                 <button className="btn btn-sm btn-outline-primary me-2" onClick={(e) => {
                                     e.stopPropagation(); // 부모 클릭 이벤트 방지
                                     searchAllRoot(dayKey); // 해당 날짜만 검색하도록 파라미터 전달
                                 }}>경로보기</button>
                                 <span className="badge bg-secondary">{days[dayKey].markerIds.length} Places</span>
                             </div>
+                            )}
                         </div>
                     </div>
 
@@ -56,25 +61,28 @@ export default function ScheduleData() {
                         setDays={setDays}
                         setMarkerData={setMarkerData}
                         removeMarker={removeMarker}
+                        isOwner={isOwner}
                     />
                 </div>
 
             ))}
-            <div>
-                <div className="d-grid gap-2">
-                    <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot(null)}}>
-                        <FaRoute className="me-2" /> 전체 경로 검색하기
-                    </button>
-                    {guest || (<>
-                    <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
-                        <FaPlus /> 날짜 추가
-                    </button>
-                    <button className="btn btn-outline-primary w-100" onClick={sendData}>
-                        <FaFloppyDisk /> 저장
-                    </button>
-                    </>)}
+            {isOwner && (
+                <div>
+                    <div className="d-grid gap-2">
+                        <button className="btn btn-primary w-100 mb-2" onClick={(e) => {searchAllRoot(null)}}>
+                            <FaRoute className="me-2" /> 전체 경로 검색하기
+                        </button>
+                        {guest || (<>
+                        <button className="btn btn-outline-success w-100 mb-2" onClick={addDays}>
+                            <FaPlus /> 날짜 추가
+                        </button>
+                        <button className="btn btn-outline-primary w-100" onClick={sendData}>
+                            <FaFloppyDisk /> 저장
+                        </button>
+                        </>)}
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     </>)
 }

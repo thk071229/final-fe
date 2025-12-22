@@ -3,10 +3,13 @@ import { TiWeatherPartlySunny } from "react-icons/ti";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
+import { useAtom, useAtomValue, useSetAtom } from "jotai"
+import { loginIdState } from "../../utils/jotai";
 
 
 
 export default function Schedule({ outletContext }) {
+    const loginId = useAtomValue(loginIdState);
 
     const location = useLocation();
     // const isSearch = location.pathname.endsWith("/search");
@@ -17,29 +20,34 @@ export default function Schedule({ outletContext }) {
         {/* 일정 리스트 */}
             {/* 탭 이동 버튼 */}
             {/* 일정 리스트 상단 제어 섹션 */}
+           
             <div className="row mt-1 px-2">
                 {/* 1. 탭 이동 버튼: 현재 경로에 따라 활성화 스타일 적용 */}
-                <div className="col-12 d-flex justify-content-center mb-4 tab-group">
-                    <Link
-                        to="data"
-                        className={`btn w-100 ${location.pathname.endsWith("/data") ? 'tab-active' : 'tab-inactive'}`}
-                    >
-                        리스트 보기
-                    </Link>
-                    <Link
-                        to="search"
-                        className={`btn w-100 ms-2 ${location.pathname.endsWith("/search") ? 'tab-active' : 'tab-inactive'}`}
-                    >
-                        장소 검색
-                    </Link>
-                </div>
+                 {outletContext.isOwner && (
+                    <div className="col-12 d-flex justify-content-center mb-4 tab-group">
+                        <Link
+                            to="data"
+                            className={`btn w-100 ${location.pathname.endsWith("/data") ? 'tab-active' : 'tab-inactive'}`}
+                        >
+                            리스트 보기
+                        </Link>
+                        <Link
+                            to="search"
+                            className={`btn w-100 ms-2 ${location.pathname.endsWith("/search") ? 'tab-active' : 'tab-inactive'}`}
+                        >
+                            장소 검색
+                        </Link>
+                    </div>
+                 )}
 
                 {/* 2. 상단 공통 섹션: 제목/날씨 */}
                 <div className="col-12">
                     <div className="schedule-header d-flex align-items-center justify-content-center shadow-sm">
                         <span className="weather-icon"><TiWeatherPartlySunny /></span>
                         <h5 className="schedule-title mb-0">{outletContext.scheduleDto.scheduleName}</h5>
-                        <span className="badge rounded-pill bg-warning ms-2 text-dark" style={{ fontSize: '0.75rem' }}>계획중</span>
+                        <span className="badge rounded-pill bg-warning ms-2 text-dark" style={{ fontSize: '0.75rem' }}>
+                            {outletContext.scheduleDto.scheduleState}
+                        </span>
                     </div>
                 </div>
 

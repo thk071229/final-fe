@@ -1,9 +1,10 @@
-import axios from "axios"
-import { useCallback, useEffect, useState } from "react"
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
+import { useNavigate } from 'react-router-dom';
 import { toast } from "react-toastify";
 import { FaUsers, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
-export default function AdminDashboard(){
+export default function AdminDashboard() {
     // 페이징 처리를 위한 통합 상태 관리
     const [pageData, setPageData] = useState({
         list: [],
@@ -14,10 +15,15 @@ export default function AdminDashboard(){
     const [loading, setLoading] = useState(false);
     const pointColor = "#86C9BB"; // TripPlanner 민트색
 
-    // 데이터를 로드하는 함수 (페이지 번호를 인자로 받음)
+    // 페이지당 출력 개수 (서버 설정과 맞춰야 함)
+    const size = 10;
+    const totalPages = Math.ceil(pageData.count / size);
+
+    // 데이터를 로드하는 함수
     const loadData = useCallback(async (pageNo = 1) => {
         setLoading(true);
         try {
+            // 주소 끝에 페이지 번호 전달
             const { data } = await axios.get(`/admin/account/list/page/${pageNo}`);
             setPageData(data);
         } catch (error) {
@@ -27,9 +33,17 @@ export default function AdminDashboard(){
         }
     }, []);
 
+    const navigate = useNavigate();
+
+    const handleMemberDetail = (accountId) => {
+        // 상세 페이지로 이동하며 ID를 파라미터로 전달
+        navigate(`/admin/member/${accountId}`);
+    };
+
+    // 처음 렌더링 시 데이터 로드
     useEffect(() => {
-        loadData();
-    }, [loadData])
+        loadData(1);
+    }, [loadData]);
 
     // 등급별 스타일 지정
     const getLevelStyle = (level) => {
@@ -70,7 +84,7 @@ export default function AdminDashboard(){
                         <div className="vr me-3" style={{ width: "4px", backgroundColor: pointColor, borderRadius: "2px", opacity: 1 }}></div>
                         <h5 className="mb-0 fw-bold">회원 정보 현황</h5>
                     </div>
-                    <span className="text-muted small">Page {pageData.page}</span>
+                    <span className="text-muted small">Page {pageData.page} / {totalPages || 1}</span>
                 </div>
                 
                 <div className="table-responsive">
@@ -87,7 +101,9 @@ export default function AdminDashboard(){
                             </tr>
                         </thead>
                         <tbody>
-                            {!loading && pageData.list.length > 0 ? (
+                            {loading ? (
+                                <tr><td colSpan="7" className="py-5 text-center text-muted">데이터 로딩 중...</td></tr>
+                            ) : pageData.list.length > 0 ? (
                                 pageData.list.map((account) => {
                                     const levelStyle = getLevelStyle(account.accountLevel);
                                     return (
@@ -125,7 +141,8 @@ export default function AdminDashboard(){
                                             </td>
                                             <td className="pe-4 text-center">
                                                 <button className="btn btn-sm rounded-3 border-0 px-3" 
-                                                        style={{ backgroundColor: "#f1f3f5", color: "#666", fontSize: "0.75rem", fontWeight: "bold" }}>
+                                                        style={{ backgroundColor: "#f1f3f5", color: "#666", fontSize: "0.75rem", fontWeight: "bold" }}
+                                                        onClick={() => handleMemberDetail(account.accountId)}>
                                                     상세
                                                 </button>
                                             </td>
@@ -134,39 +151,61 @@ export default function AdminDashboard(){
                                 })
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="py-5 text-center text-muted">
-                                        {loading ? "데이터 로딩 중..." : "등록된 회원 정보가 없습니다."}
-                                    </td>
+                                    <td colSpan="7" className="py-5 text-center text-muted">등록된 회원 정보가 없습니다.</td>
                                 </tr>
                             )}
                         </tbody>
                     </table>
                 </div>
 
-                {/* 페이징 컨트롤 바 추가 */}
-                <div className="card-footer bg-white py-3 border-0 d-flex justify-content-center align-items-center gap-4">
-                    <button 
-                        className="btn btn-light btn-sm rounded-circle p-2"
-                        disabled={pageData.page === 1 || loading}
-                        onClick={() => loadData(pageData.page - 1)}
-                        style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >
-                        <FaChevronLeft size={12} />
-                    </button>
-                    
-                    <div className="fw-bold" style={{ color: pointColor }}>
-                        {pageData.page}
-                    </div>
+                {/* 페이징 컨트롤 바 (숫자 포함) */}
+                {totalPages > 0 && (
+                    <div className="card-footer bg-white py-4 border-0 d-flex justify-content-center align-items-center gap-2">
+                        {/* 이전 페이지 버튼 */}
+                        <button 
+                            className="btn btn-light btn-sm rounded-3 p-2"
+                            disabled={pageData.page === 1 || loading}
+                            onClick={() => loadData(pageData.page - 1)}
+                            style={{ width: "35px", height: "35px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                            <FaChevronLeft size={12} />
+                        </button>
+                        
+                        {/* 페이지 숫자 버튼들 */}
+                        {[...Array(totalPages)].map((_, idx) => {
+                            const pageNum = idx + 1;
+                            // 현재 페이지 기준 전후 2~3개씩만 보여주는 로직을 추가할 수도 있지만, 
+                            // 일단은 요청하신 대로 전체 숫자가 나오도록 작성했습니다.
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => loadData(pageNum)}
+                                    className="btn btn-sm rounded-3"
+                                    style={{
+                                        width: "35px",
+                                        height: "35px",
+                                        backgroundColor: pageData.page === pageNum ? pointColor : "transparent",
+                                        color: pageData.page === pageNum ? "white" : "#666",
+                                        fontWeight: pageData.page === pageNum ? "bold" : "500",
+                                        border: "none"
+                                    }}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
 
-                    <button 
-                        className="btn btn-light btn-sm rounded-circle p-2"
-                        disabled={pageData.last || loading}
-                        onClick={() => loadData(pageData.page + 1)}
-                        style={{ width: "32px", height: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}
-                    >
-                        <FaChevronRight size={12} />
-                    </button>
-                </div>
+                        {/* 다음 페이지 버튼 */}
+                        <button 
+                            className="btn btn-light btn-sm rounded-3 p-2"
+                            disabled={pageData.last || loading}
+                            onClick={() => loadData(pageData.page + 1)}
+                            style={{ width: "35px", height: "35px", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                            <FaChevronRight size={12} />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

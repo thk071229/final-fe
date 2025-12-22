@@ -1,10 +1,18 @@
 import axios from "axios";
+import React from "react";
 import { useCallback, useState, useEffect } from "react";
 import { FaMagnifyingGlass, FaUserGear, FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { PiTildeBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 
 export default function AccountSearch() {
+    // 테마 설정 (기존 코드에서 참조하던 theme 객체 정의)
+    const theme = {
+        primary: "#86C9BB",
+        text: "#444",
+        secondary: "#6c757d"
+    };
+
     const [input, setInput] = useState({
         accountId: "",
         accountNickname: "",
@@ -17,13 +25,17 @@ export default function AccountSearch() {
         accountLevelList: ["일반회원", "상담사", "관리자"],
     });
 
-    // 페이징 관련 상태 추가
+    // 페이징 관련 상태
     const [result, setResult] = useState({
         list: [],
         page: 1,
         count: 0,
         last: true
     });
+    
+    // 페이지당 10개씩 출력 기준 전체 페이지 수 계산
+    const totalPages = Math.ceil(result.count / 10);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(false);
 
     const pointColor = "#86C9BB";
@@ -41,13 +53,10 @@ export default function AccountSearch() {
         setInput(prev => ({ ...prev, [name]: value }));
     }, []);
 
-    // 데이터를 가져오는 함수 (페이지 번호를 인자로 받음)
+    // 데이터를 가져오는 핵심 함수
     const sendData = useCallback(async (pageNo = 1) => {
         setLoading(true);
         try {
-            // 서버에 검색 조건 + 페이지 번호 전송
-
-            console.log("전송할 페이지 번호:", pageNo);
             const { data } = await axios.post("/admin/complexSearch", {
                 ...input,
                 page: pageNo
@@ -59,6 +68,20 @@ export default function AccountSearch() {
             setLoading(false);
         }
     }, [input]);
+
+    // 페이지 번호(currentPage)가 바뀔 때마다 서버에 해당 페이지 데이터 요청
+    useEffect(() => {
+        sendData(currentPage);
+    }, [currentPage]);
+
+    // 검색 버튼 클릭 시 (항상 1페이지부터 검색)
+    const handleSearch = () => {
+        if(currentPage === 1) {
+            sendData(1);
+        } else {
+            setCurrentPage(1); // 1로 바꾸면 위 useEffect가 작동하여 sendData(1)을 실행함
+        }
+    };
 
     const changeAccountLevelList = useCallback(e => {
         const value = e.target.value;
@@ -108,7 +131,7 @@ export default function AccountSearch() {
                         </div>
                         <div className="col-md-2 d-flex align-items-end">
                             <button className="btn w-100 py-2 fw-bold text-white rounded-3 shadow-sm" 
-                                style={{ backgroundColor: pointColor }} onClick={() => sendData(1)}>
+                                style={{ backgroundColor: pointColor }} onClick={handleSearch}>
                                 <FaMagnifyingGlass className="me-2" /> 검색
                             </button>
                         </div>
@@ -185,26 +208,52 @@ export default function AccountSearch() {
                     </table>
                 </div>
 
-                {/* 페이징 컨트롤 바 영역 추가 */}
-                <div className="card-footer bg-white py-3 border-0 d-flex justify-content-center align-items-center gap-4">
-                    <button 
-                        className="btn btn-light btn-sm rounded-circle p-2"
-                        disabled={result.page === 1 || loading}
-                        onClick={() => sendData(result.page - 1)}
-                    >
-                        <FaChevronLeft size={14} />
-                    </button>
-                    
-                    <span className="fw-bold" style={{ color: pointColor }}>{result.page}</span>
+                {/* 페이징 버튼 영역 */}
+                {totalPages > 0 && (
+                    <div className="py-4 d-flex justify-content-center align-items-center gap-2" style={{ borderTop: "1px solid #f1f1f1" }}>
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            style={{
+                                background: "none", border: "none", cursor: currentPage === 1 ? "default" : "pointer",
+                                color: currentPage === 1 ? "#ccc" : theme.text, display: "flex", alignItems: "center"
+                            }}
+                        >
+                            <FaChevronLeft size={14} />
+                        </button>
 
-                    <button 
-                        className="btn btn-light btn-sm rounded-circle p-2"
-                        disabled={result.last || loading}
-                        onClick={() => sendData(result.page + 1)}
-                    >
-                        <FaChevronRight size={14} />
-                    </button>
-                </div>
+                        {[...Array(totalPages)].map((_, idx) => {
+                            const pageNum = idx + 1;
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => setCurrentPage(pageNum)}
+                                    style={{
+                                        width: "35px", height: "35px", borderRadius: "8px",
+                                        border: "none", cursor: "pointer",
+                                        backgroundColor: currentPage === pageNum ? theme.primary : "transparent",
+                                        color: currentPage === pageNum ? "white" : theme.text,
+                                        fontWeight: currentPage === pageNum ? "700" : "500",
+                                        transition: "all 0.2s"
+                                    }}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            style={{
+                                background: "none", border: "none", cursor: currentPage === totalPages ? "default" : "pointer",
+                                color: currentPage === totalPages ? "#ccc" : theme.text, display: "flex", alignItems: "center"
+                            }}
+                        >
+                            <FaChevronRight size={14} />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

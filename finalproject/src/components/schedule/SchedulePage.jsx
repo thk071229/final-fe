@@ -22,6 +22,7 @@ export default function SchedulePage() {
     const loginId = useAtomValue(loginIdState);
 
 
+    const [isLoading, setIsLoading] = useState(true);
     const accountId = useAtomValue(loginIdState);
     const [memberList, setMemberList] = useState([]);
     const [days, setDays] = useState({
@@ -108,11 +109,11 @@ export default function SchedulePage() {
         scheduleState: "",
         scheduleNo: scheduleNo
     })
+    const isOwner = !isLoading && scheduleDto.scheduleOwner === loginId;
 
-    
-        useEffect(() => {
-  console.log("SchedulePage params scheduleNo =", scheduleNo);
-}, [scheduleNo]);
+    useEffect(() => {
+        console.log("SchedulePage params scheduleNo =", scheduleNo);
+    }, [scheduleNo]);
 
     const PRIORITY_COLORS = {
         RECOMMEND: "#0052FF",
@@ -122,6 +123,7 @@ export default function SchedulePage() {
 
     // Marker 추가
     const addMarker = useCallback(async (latlng) => {
+        if (!isOwner) return;
         const id = uuidv4();
         const address = { x: latlng.getLng(), y: latlng.getLat() };
 
@@ -149,6 +151,7 @@ export default function SchedulePage() {
     }, [days, selectedDay]);
 
     const addTempMarker = useCallback((latlng) => {
+        if (!isOwner) return;
         setTempMarker(prev => ([
             ...prev,
             {
@@ -159,6 +162,7 @@ export default function SchedulePage() {
     }, [])
 
     const addDays = useCallback(() => {
+        if (!isOwner) return;
         const currentDayKeys = Object.keys(days).map(Number);
         const nextDay = currentDayKeys.length > 0 ? Math.max(...currentDayKeys) + 1 : 1;
 
@@ -176,6 +180,7 @@ export default function SchedulePage() {
     }, [days]);
 
     const removeMarker = useCallback((dayKey, id) => {
+        if (!isOwner) return;
         setDays(prevDays => {
             const targetDay = prevDays[dayKey];
             if (!targetDay) return prevDays;
@@ -257,6 +262,7 @@ export default function SchedulePage() {
     }, [markerData, selectedDay, days]);
 
     const tempMarkerElements = useCallback(() => {
+        if (!isOwner) return;
         const handleMarkerClick = (clickedMarker) => {
             // 1. addMarker 함수 호출을 위한 customLatLng 객체 생성
             const customLatLng = {
@@ -440,6 +446,7 @@ export default function SchedulePage() {
     }, [days, markerData, selectedSearch, selectedType]);
     // 주소 검색
     const addMarkerForSearch = useCallback(async () => {
+        if (!isOwner) return;
         setSearchList([]);
         const { data } = await axios.post("/kakaoMap/searchAddress", searchData);
         // const {documents} = data;
@@ -475,6 +482,7 @@ export default function SchedulePage() {
     }, [])
 
     const sendData = useCallback(async () => {
+        if (!isOwner) return;
         const payload = {
             data: {
                 days: days,
@@ -495,11 +503,13 @@ export default function SchedulePage() {
         }));
     }, [days, markerData, scheduleDto])
 
+    const routeHistory = useRef({});
+
     const loadData = useCallback(async () => {
         console.log("loadData called with scheduleNo =", scheduleNo);
-
+        console.log("owner? ", isOwner);
         if (!scheduleNo) return;
-
+        setIsLoading(true);
         try {
             const response = await axios.post(`/schedule/detail`, scheduleDto);
             const wrapper = response.data; // ScheduleInsertDataWrapperVO 객체
@@ -520,7 +530,7 @@ export default function SchedulePage() {
 
                     const currentOrderKey = markerIds.join(","); // 현재 순서 지문
                     const routesMap = dayObj.routes; // { CAR: { RECOMMEND: [...] }, WALK: {...} }
-
+                    console.log(routesMap)
                     if (routesMap) {
                         Object.keys(routesMap).forEach(mode => {
                             const priorities = routesMap[mode];
@@ -556,6 +566,8 @@ export default function SchedulePage() {
         } catch (error) {
             console.error("데이터 로드 중 오류 발생:", error);
             toast.error("일정을 불러오는 데 실패했습니다.");
+        } finally {
+            setIsLoading(false);
         }
     }, [scheduleNo, scheduleDto]); // scheduleDto 추가 (보통 axios 호출 시 사용하므로)
 
@@ -579,9 +591,9 @@ export default function SchedulePage() {
     }, [selectedDay, days, selectedSearch, selectedType]);
 
     const loadMember = useCallback(async () => {
-  const { data } = await axios.get(`/schedule/memberList/${scheduleNo}`);
-  setMemberList(data);
-}, [scheduleNo]);
+        const { data } = await axios.get(`/schedule/memberList/${scheduleNo}`);
+        setMemberList(data);
+    }, [scheduleNo]);
 
     useEffect(() => {
         loadMember();
@@ -590,27 +602,27 @@ export default function SchedulePage() {
 
     // 링크를 타고 들어온 회원 멤버 리스트에 추가
     useEffect(() => {
-  if (!scheduleNo) return;
-  if (!accountId) return;      // 로그인 안 했으면 패스
-  if (guest) return;           // 비회원이면 패스 (회원만 자동참여)
+        if (!scheduleNo) return;
+        if (!accountId) return;      // 로그인 안 했으면 패스
+        if (guest) return;           // 비회원이면 패스 (회원만 자동참여)
 
-  // memberList가 아직 로딩 전이면 패스
-  if (!Array.isArray(memberList)) return;
+        // memberList가 아직 로딩 전이면 패스
+        if (!Array.isArray(memberList)) return;
 
-  // 이미 멤버인지 체크
-  const already = memberList.some(m => m.accountId === accountId);
-  if (already) return;
+        // 이미 멤버인지 체크
+        const already = memberList.some(m => m.accountId === accountId);
+        if (already) return;
 
-  (async () => {
-    try {
-      await axios.post(`/share/member/${scheduleNo}`, {accountId : loginId});
+        (async () => {
+            try {
+                await axios.post(`/share/member/${scheduleNo}`, { accountId: loginId });
 
-    loadMember();
-    } catch (e) {
-      console.log("멤버 자동추가 실패", e);
-    }
-  })();
-}, [scheduleNo, accountId, guest, memberList]);
+                loadMember();
+            } catch (e) {
+                console.log("멤버 자동추가 실패", e);
+            }
+        })();
+    }, [scheduleNo, accountId, guest, memberList]);
 
 
     useEffect(() => {
@@ -666,134 +678,140 @@ export default function SchedulePage() {
         selectType,
         selectSearch,
         sendData,
-        scheduleDto
+        scheduleDto,
+        isOwner
     };
 
     const toggleSchedulePublicWithSwal = async () => {
-  const nextState = !scheduleDto.schedulePublic;
+        const nextState = !scheduleDto.schedulePublic;
 
-  const result = await Swal.fire({
-    title: nextState ? "공개로 변경할까요?" : "비공개로 변경할까요?",
-    text: nextState
-      ? "공개하면 링크를 가진 사람이 일정을 볼 수 있어요."
-      : "비공개로 바꾸면 나만 볼 수 있어요.",
-    icon: "question",
-    showCancelButton: true,
-    confirmButtonText: "변경",
-    cancelButtonText: "취소",
-    confirmButtonColor: nextState ? "#79c6b5" : "#6c757d", // 민트/그레이
-    cancelButtonColor: "#adb5bd",
-    reverseButtons: true,
-    focusCancel: true,
-  });
+        const result = await Swal.fire({
+            title: nextState ? "공개로 변경할까요?" : "비공개로 변경할까요?",
+            text: nextState
+                ? "공개하면 링크를 가진 사람이 일정을 볼 수 있어요."
+                : "비공개로 바꾸면 나만 볼 수 있어요.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "변경",
+            cancelButtonText: "취소",
+            confirmButtonColor: nextState ? "#79c6b5" : "#6c757d", // 민트/그레이
+            cancelButtonColor: "#adb5bd",
+            reverseButtons: true,
+            focusCancel: true,
+        });
 
-  if (!result.isConfirmed) return;
+        if (!result.isConfirmed) return;
 
-    await axios.patch("/schedule/public", {
-       scheduleNo: Number(scheduleDto.scheduleNo),
-      schedulePublic: nextState,
-    });
+        await axios.patch("/schedule/public", {
+            scheduleNo: Number(scheduleDto.scheduleNo),
+            schedulePublic: nextState,
+        });
 
-  setScheduleDto((prev) => ({
-    ...prev,
-    schedulePublic: nextState,
-  }));
+        setScheduleDto((prev) => ({
+            ...prev,
+            schedulePublic: nextState,
+        }));
 
-  await Swal.fire({
-    title: "변경 완료!",
-    text: nextState ? "일정이 공개되었습니다." : "일정이 비공개로 변경되었습니다.",
-    icon: "success",
-    timer: 1200,
-    showConfirmButton: false,
-  });
-};
+        await Swal.fire({
+            title: "변경 완료!",
+            text: nextState ? "일정이 공개되었습니다." : "일정이 비공개로 변경되었습니다.",
+            icon: "success",
+            timer: 1200,
+            showConfirmButton: false,
+        });
+    };
+    if (isLoading) {
+        return <div className="text-center py-5">일정 데이터를 불러오는 중입니다...</div>;
+    }
 
-return (
-  <>
-    <div className="container-fluid px-3 py-3 schedule-page">
+    return (
+        <>
+            <div className="container-fluid px-3 py-3 schedule-page">
 
-      {/* ===== 상단: 좌 패널 + 우 지도 ===== */}
-      <div className="row g-3 align-items-stretch">
-        
-        {/* 좌측 패널 */}
-        <div className="col-12 col-lg-4 col-xl-3">
-          <div className="panel-card h-100">
+                {/* ===== 상단: 좌 패널 + 우 지도 ===== */}
+                <div className="row g-3 align-items-stretch">
 
-            {/* 상단 액션/정보 바 */}
-            <div className="panel-topbar">
-              <button
-                type="button"
-                className={`btn ${scheduleDto.schedulePublic ? "btn-success" : "btn-outline-secondary"} btn-sm`}
-                onClick={toggleSchedulePublicWithSwal}
-                
-              >
-                {scheduleDto.schedulePublic ? "공개" : "비공개"}
-              </button>
+                    {/* 좌측 패널 */}
+                    <div className="col-12 col-lg-4 col-xl-3">
+                        <div className="panel-card h-100">
 
-              {!guest && (
-                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={copyUrl}>
-                  <FaLink className="me-1" />
-                  공유
-                </button>
-              )}
+                            {/* 상단 액션/정보 바 */}
+                            {isOwner && (
+                                <div className="panel-topbar">
+                                    <button
+                                        type="button"
+                                        className={`btn ${scheduleDto.schedulePublic ? "btn-success" : "btn-outline-secondary"} btn-sm`}
+                                        onClick={toggleSchedulePublicWithSwal}
+
+                                    >
+                                        {scheduleDto.schedulePublic ? "공개" : "비공개"}
+                                    </button>
+
+                                    {!guest && (
+                                        <button type="button" className="btn btn-outline-secondary btn-sm" onClick={copyUrl}>
+                                            <FaLink className="me-1" />
+                                            공유
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* 참여자 */}
+                            <div className="panel-members">
+                                <span className="panel-label">참여자</span>
+                                <div className="panel-member-chips">
+                                    {memberList.map((member) => (
+                                        <span className="member-chip"
+                                            key={member.scheduleMemberNo}
+                                        >
+                                            {member.scheduleMemberNickname}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="panel-divider" />
+
+                            {/* Schedule 컴포넌트 영역 */}
+                            <div className="panel-body">
+                                <Schedule
+                                    copyUrl={copyUrl}
+                                    memberList={memberList}
+                                    outletContext={outletContext}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 우측 지도 */}
+                    <div className="col-12 col-lg-8 col-xl-9">
+                        <div className="map-card h-100">
+                            <Map
+                                className="map-info"
+                                center={center}
+                                level={3}
+                                onClick={(_, mouseEvent) => isOwner && addMarker(mouseEvent.latLng)}
+                            >
+                                {markerElements()}
+                                {tempMarkerElements()}
+                                {polylineElements()}
+                            </Map>
+                        </div>
+                    </div>
+
+                </div>
+
+                {/* ===== 하단: 댓글 ===== */}
+                <div className="row mt-3">
+                    <div className="col-12">
+                        <div className="reply-card-wrap">
+                            <Reply />
+                        </div>
+                    </div>
+                </div>
+
             </div>
-
-            {/* 참여자 */}
-            <div className="panel-members">
-              <span className="panel-label">참여자</span>
-              <div className="panel-member-chips">
-                {memberList.map((member) => (
-                  <span className="member-chip"
-                   key={member.scheduleMemberNo}
-                  >
-                    {member.scheduleMemberNickname}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="panel-divider" />
-
-            {/* Schedule 컴포넌트 영역 */}
-            <div className="panel-body">
-              <Schedule
-                copyUrl={copyUrl}
-                memberList={memberList}
-                outletContext={outletContext}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 우측 지도 */}
-        <div className="col-12 col-lg-8 col-xl-9">
-          <div className="map-card h-100">
-            <Map
-              className="map-info"
-              center={center}
-              level={3}
-              onClick={(_, mouseEvent) => addMarker(mouseEvent.latLng)}
-            >
-              {markerElements()}
-              {tempMarkerElements()}
-              {polylineElements()}
-            </Map>
-          </div>
-        </div>
-
-      </div>
-
-      {/* ===== 하단: 댓글 ===== */}
-      <div className="row mt-3">
-        <div className="col-12">
-          <div className="reply-card-wrap">
-            <Reply />
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </>
-);
+        </>
+    );
 
 }

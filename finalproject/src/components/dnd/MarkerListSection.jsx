@@ -2,7 +2,7 @@ import { useCallback } from "react";
 // import update from "immutability-helper";
 import { Marker } from "./Marker";
 
-export default function MarkerListSection({ markerIds, routes, markerData, setDays, setMarkerData, selectedDay, selectedType, selectedSearch, removeMarker }) {
+export default function MarkerListSection({ markerIds, routes, markerData, setDays, setMarkerData, selectedDay, selectedType, isOwner, selectedSearch, removeMarker }) {
     // id로 마커 찾기 (DnD용)
     const findMarker = useCallback((id) => {
         const index = markerIds.indexOf(id);
@@ -10,6 +10,7 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
     }, [markerIds]);
 
     const moveMarker = useCallback((id, atIndex) => {
+        if(!isOwner) return;
         setDays((prev) => {
             // console.log(prev[selectedDay].markerIds.indexOf(id))
             const currentMarkerIds = prev[selectedDay].markerIds;
@@ -51,6 +52,7 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
     }, [setMarkerData, setDays, selectedDay]);
 
     const changeStrValue = useCallback((e, id) => {
+        if(!isOwner) return;
         const { name, value } = e.target;
         setMarkerData(prev => ({
             ...prev,
@@ -102,6 +104,7 @@ export default function MarkerListSection({ markerIds, routes, markerData, setDa
             findMarker={findMarker}
             onRemove={() => removeMarker(selectedDay, id)}
             changeStrValue={(e) => changeStrValue(e, id)}
+            isOwner={isOwner}
         />
         )
     });

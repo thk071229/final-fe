@@ -54,7 +54,7 @@ export default function AdminSchedule() {
 
     useEffect(() => {
         loadSchedules();
-    }, [loadSchedules]);
+    }, [currentPage]);
 
     // 3. 핸들러 (검색/필터 시 1페이지로 이동)
     const handleFilterChange = (e) => {
@@ -117,6 +117,16 @@ export default function AdminSchedule() {
                                     border: `1px solid ${theme.border}`, outline: "none", width: "240px"
                                 }}
                             />
+                            <button 
+                                onClick={()=>{loadSchedules()}}
+                                className="ms-2"
+                                style={{ 
+                                    backgroundColor: theme.primary, color: "white", border: "none",
+                                    padding: "8px 16px", borderRadius: "8px", cursor: "pointer", fontWeight: "bold"
+                                }}
+                            >
+                                검색
+                            </button>
                         </div>
                     </div>
                 </div>

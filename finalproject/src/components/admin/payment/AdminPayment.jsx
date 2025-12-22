@@ -1,4 +1,5 @@
 import axios from "axios";
+import React from "react";
 import { useCallback, useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaCreditCard, FaChevronRight, FaChevronLeft } from "react-icons/fa6";
@@ -10,11 +11,19 @@ export default function AdminPayment() {
         count: 0,
         last: false
     });
+    const totalPages = Math.ceil(paymentData.count / 10);
+    const [currentPage, setCurrentPage] = useState(1);
     const [loading, setLoading] = useState(false);
 
     // 검색 관련 상태 추가
-    const [searchType, setSearchType] = useState("paymentOwner"); // 기본값: 결제자
+    const [searchType, setSearchType] = useState("payment_owner"); // 기본값: 결제자
     const [searchKeyword, setSearchKeyword] = useState("");
+
+    const handleSearch = (e) => {
+        setSearchKeyword(e.target.value);
+        setCurrentPage(1);
+    };
+
 
     const theme = {
         primary: "#86C9BB",
@@ -27,12 +36,12 @@ export default function AdminPayment() {
     };
 
     // 데이터 로드 함수 (POST 방식으로 변경 및 검색어 포함)
-    const loadPayment = useCallback(async (pageNo = 1) => {
+    const loadPayment = useCallback(async () => {
         setLoading(true);
         try {
             // POST 요청 시 바디에 검색 정보와 페이지 번호 전달
             const response = await axios.post(`/admin/payment/list`, {
-                page: pageNo,
+                page: currentPage,
                 column: searchType,      // 검색 종류 (paymentTid 또는 paymentOwner)
                 keyword: searchKeyword   // 검색어
             });
@@ -42,16 +51,11 @@ export default function AdminPayment() {
         } finally {
             setLoading(false);
         }
-    }, [searchType, searchKeyword]); // 검색 조건이 바뀔 때 함수 갱신
+    }, [searchType, searchKeyword, currentPage]); // 검색 조건이 바뀔 때 함수 갱신
 
     useEffect(() => {
-        loadPayment(1); // 첫 로딩 시 1페이지
-    }, []); // 초기 로딩 시 1회 실행
-
-    // 검색 버튼 클릭 핸들러
-    const handleSearch = () => {
-        loadPayment(1); // 검색 시 무조건 1페이지부터 조회
-    };
+        loadPayment(); // 첫 로딩 시 1페이지
+    }, [currentPage]); // 초기 로딩 시 1회 실행
 
     const formatDate = (dateString) => {
         if (!dateString) return "-";
@@ -84,8 +88,8 @@ export default function AdminPayment() {
                                 outline: "none", cursor: "pointer", fontSize: "0.9rem"
                             }}
                         >
-                            <option value="paymentOwner">결제자 ID</option>
-                            <option value="paymentTid">거래번호(TID)</option>
+                            <option value="payment_owner">결제자 ID</option>
+                            <option value="payment_tid">거래번호(TID)</option>
                         </select>
                         
                         <div style={{ position: "relative" }}>
@@ -168,24 +172,48 @@ export default function AdminPayment() {
                     </table>
                 </div>
 
-                {/* 페이징 컨트롤 */}
-                <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "20px", marginTop: "2rem" }}>
-                    <button 
-                        disabled={paymentData.page === 1}
-                        onClick={() => loadPayment(paymentData.page - 1)}
-                        style={{ border: "none", backgroundColor: "transparent", cursor: "pointer", color: paymentData.page === 1 ? "#ccc" : theme.text }}
-                    >
-                        <FaChevronLeft /> 이전
-                    </button>
-                    <span style={{ fontWeight: "bold", color: theme.primary }}>{paymentData.page}</span>
-                    <button 
-                        disabled={paymentData.last}
-                        onClick={() => loadPayment(paymentData.page + 1)}
-                        style={{ border: "none", backgroundColor: "transparent", cursor: "pointer", color: paymentData.last ? "#ccc" : theme.text }}
-                    >
-                        다음 <FaChevronRight />
-                    </button>
-                </div>
+                {/* 페이징 버튼 영역 */}
+                {totalPages > 1 && (
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginTop: "2.5rem", gap: "8px" }}>
+                        <button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(prev => prev - 1)}
+                            style={{
+                                background: "none", border: "none", cursor: currentPage === 1 ? "default" : "pointer",
+                                color: currentPage === 1 ? "#ccc" : theme.text, display: "flex", alignItems: "center"
+                            }}
+                        >
+                            <FaChevronLeft size={14} />
+                        </button>
+
+                        {[...Array(totalPages)].map((_, idx) => (
+                            <button
+                                key={idx + 1}
+                                onClick={() => setCurrentPage(idx + 1)}
+                                style={{
+                                    width: "35px", height: "35px", borderRadius: "8px",
+                                    border: "none", cursor: "pointer",
+                                    backgroundColor: currentPage === idx + 1 ? theme.primary : "transparent",
+                                    color: currentPage === idx + 1 ? "white" : theme.text,
+                                    fontWeight: currentPage === idx + 1 ? "700" : "500"
+                                }}
+                            >
+                                {idx + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(prev => prev + 1)}
+                            style={{
+                                background: "none", border: "none", cursor: currentPage === totalPages ? "default" : "pointer",
+                                color: currentPage === totalPages ? "#ccc" : theme.text, display: "flex", alignItems: "center"
+                            }}
+                        >
+                            <FaChevronRight size={14} />
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

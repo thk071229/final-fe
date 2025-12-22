@@ -13,7 +13,7 @@ import { useAtomValue } from "jotai"
 // }
 
 export const Marker = memo(function Marker({
-    id, duration, distance, markerData, moveMarker, findMarker, onRemove, changeStrValue
+    id, isOwner, duration, distance, markerData, moveMarker, findMarker, onRemove, changeStrValue
 }) {
 
 
@@ -30,7 +30,7 @@ export const Marker = memo(function Marker({
             end: (item, monitor) => {
                 const { id: droppedId, originalIndex } = item
                 const didDrop = monitor.didDrop()
-                if (!didDrop) {
+                if (!didDrop && isOwner) {
                     moveMarker(droppedId, originalIndex)
                 }
             },
@@ -84,7 +84,7 @@ export const Marker = memo(function Marker({
                         {/* 장소 이름 */}
                         <div className="fw-bold">{markerData.name}</div>
 
-                        {guest || (<>
+                        {(guest || !isOwner) || (<>
                             {/* 삭제 버튼 */}
                             <FaXmark
                                 className="text-danger ms-2"
@@ -109,7 +109,7 @@ export const Marker = memo(function Marker({
                             cursor: guest ? "not-allowed" : "text"
                         }}
                         defaultValue={markerData.content} // markerData.content를 초기값으로 설정
-                        readOnly={guest}
+                        readOnly={guest || !isOwner}
                     ></textarea>
                 </div>
             </div>
