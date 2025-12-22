@@ -81,6 +81,7 @@ export default function ScheduleModal({ isOpen, onClose }) {
         if (checked) {
         formData.append("scheduleEndDate", dayjs(endDate).format("YYYY-MM-DDTHH:mm:ss"));}
         console.log("데이터 보냄!!!");
+        formData.append("schedulePublic", schedulePublic);
         
          formData.append("tagNoList", selectTag);
 
