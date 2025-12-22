@@ -33,7 +33,7 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
     const [history, setHistory] = useState([]);
     const [last, setLast] = useState(null);
 
-   const messagesEndRef = useRef(null);
+    const scrollContainerRef = useRef(null);
 
     // --- 메시지 업데이트 로직 함수화 ---
     const updateMessages = useCallback((messageData) => {
@@ -255,8 +255,8 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
     }, []);
 
     useEffect(() => {
-        if (messagesEndRef.current) { 
-            const container = messagesEndRef.current;
+        if (scrollContainerRef.current) {
+            const container = scrollContainerRef.current;
             container.scrollTop = container.scrollHeight;
         }
     }, [history]);
@@ -293,22 +293,26 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
 
                                 {/* 3. 통합 메시지 출력 */}
                                 {history.map((m, index) => {
-                                    // 내 메시지인지 확인 (실시간 sender 또는 DB messageSender)
                                     const isMyMsg = (m.messageSender === loginId);
-                                    // const senderName = m.sender || m.messageSender;
-                                    // const content = m.text || m.messageContent; // text 필드와 messageContent 필드 모두 대응
-                                    const senderName = m.messageSender;
                                     const content = m.messageContent;
 
-                                    // 일반 채팅 (TALK)
                                     if (m.messageType === "TALK") {
                                         return (
-                                            <div key={index} className={`d-flex mb-3 ${isMyMsg ? 'justify-content-end' : 'justify-content-start'}`}  ref={messagesEndRef}>
-                                                <div className={`p-2 rounded ${isMyMsg ? 'bg-info text-white' : 'bg-light border'}`} style={{ maxWidth: '80%' }}>
-                                                    {isSenderVisible(m, history[index - 1]) && (
-                                                        <small className="fw-bold d-block mb-1">{senderName}</small>
-                                                    )}
-                                                    <div style={{ wordBreak: 'break-all' }}>{content}</div>
+                                            <div
+                                                key={index}
+                                                className={`d-flex mb-3 ${isMyMsg ? 'justify-content-end' : 'justify-content-start'}`}
+                                            >
+                                                <div
+                                                    className="p-2 rounded border"
+                                                    style={{
+                                                        maxWidth: '80%',
+                                                        backgroundColor: isMyMsg ? '#f0f0f0' : '#1890ff',
+                                                        color: isMyMsg ? 'black' : 'white',
+                                                        boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
+                                                    }}
+                                                >
+                                                    <div style={{ wordBreak: 'break-word' }}>{content}</div>
+
                                                     <small className="opacity-75" style={{ fontSize: '10px' }}>
                                                         {formatTime(m.time || m.messageTime)}
                                                     </small>
@@ -316,17 +320,20 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
                                             </div>
                                         );
                                     }
-                                    
-                                    // 시스템/경고 메시지
+
                                     if (m.messageType === "warning" || m.messageType === "system") {
                                         return (
                                             <div className="text-center my-2" key={index}>
-                                                <span className="badge bg-secondary opacity-50 small">{content}</span>
+                                                <span className="badge bg-secondary opacity-50 small">
+                                                    {m.messageContent}
+                                                </span>
                                             </div>
                                         );
                                     }
+
                                     return null;
                                 })}
+
                             </div>
                         </div>
 

@@ -36,23 +36,6 @@ export default function CounselorDashboard() {
     const stompClientRef = useRef(null);
     const subscriptionRef = useRef(null);
 
-    // useEffect(() => {
-    //     if (checkedAuth) return;
-
-    //     if (!isLoggedIn) {
-    //         navigate("/account/login");
-    //         setCheckedAuth(true);
-    //         return;
-    //     }
-
-    //     if (!isCounselor) {
-    //         //alert("상담사 전용 페이지입니다.");
-    //         navigate("/unauthorized");
-    //         setCheckedAuth(true);
-    //         //return;
-    //     }
-    // }, [isLoggedIn, isCounselor, checkedAuth]);
-
     useEffect(() => {
         if (checkedAuth) return;
 
@@ -91,7 +74,7 @@ export default function CounselorDashboard() {
                     userName: `고객 #${dto.chatNo}`,
                     status: dto.chatStatus,
                     title: dto.chatStatus === "WAITING" ? "새로운 상담 요청" : `진행 중인 채팅`,
-                    userGrade: "N/A",
+                    userGrade: dto.accountLevel || "일반회원",
                     chatId: dto.chatId,
                     chatLevel: dto.chatLevel
                 }));
@@ -150,17 +133,6 @@ export default function CounselorDashboard() {
             sessionStorage.removeItem("activeChatRoomId");
         }
     }, [loginId, room]);
-
-    // useEffect(() => {
-    //     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    // }, [messages, selectedRoomId]);
-    
-    useEffect(() => {
-        if (messagesEndRef.current) { 
-            const container = messagesEndRef.current;
-            container.scrollTop = container.scrollHeight;
-        }
-    }, [history]);
 
     // 1. 최초 1회 연결
     useEffect(() => {
@@ -231,40 +203,6 @@ export default function CounselorDashboard() {
         }
     }, [room, selectedRoomId]);
 
-    // const updateChatStatus = async (chatNo, newStatus) => {
-    //     //const rawToken = sessionStorage.getItem("accessToken");
-    //     if (!accessToken) return;
-    //     const token = accessToken.replace(/"/g, '');
-
-    //     const updateData = {
-    //         chatNo,
-    //         chatStatus: newStatus,
-    //     };
-
-    //     await axios.post(`${API_URL}/status`, updateData, {
-    //         headers: {
-    //             Authorization: `Bearer ${token}`,
-    //         }
-    //     });
-
-    //     try {
-    //         const response = await axios.post(`${API_URL}/status`, updateData, {
-    //             headers: {
-    //                 'Content-Type': 'application/json',
-    //                 "Authorization": `Bearer ${token}`,
-    //             }
-    //         });
-
-    //         // 성공 시 목록 새로고침
-    //         if (response.status === 200 || response.status === 204) {
-    //             // await fetchChatRooms();
-    //         }
-    //     } catch (error) {
-    //         console.error("오류 발생 줄:", error.config);
-    //         alert(`상태 변경 실패: ${error.response?.data || error.message}`);
-    //     }
-    // };
-
     const updateChatStatus = async (chatNo, newStatus) => {
     if (!accessToken) return;
     const token = accessToken.replace(/"/g, '');
@@ -306,23 +244,6 @@ export default function CounselorDashboard() {
             updateChatStatus(id, 'ACTIVE');
         }
     };
-
-    // const handleSendMessage = () => {
-    //     if (!inputText.trim() || !selectedRoomId) return;
-
-    //     const newMessage = {
-    //         sender: 'me',
-    //         text: inputText,
-    //         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    //     };
-
-    //     setMessages(prev => ({
-    //         ...prev,
-    //         [selectedRoomId]: [...(prev[selectedRoomId] || []), newMessage]
-    //     }));
-
-    //     setInputText("");
-    // };
 
     const handleSendMessage = () => {
         // 로그를 추가하여 함수 호출 여부 확인
@@ -375,6 +296,13 @@ export default function CounselorDashboard() {
 
     const currentRoom = room?.find(r => r.id === selectedRoomId) || null;
     const currentMessages = messages[selectedRoomId] || [];
+
+    useEffect(() => {
+        if (messagesEndRef.current) { 
+            const container = messagesEndRef.current;
+            container.scrollTop = container.scrollHeight;
+        }
+    }, [history]);
 
     const getBadgeStyle = (status) => {
         switch (status) {
@@ -482,23 +410,6 @@ export default function CounselorDashboard() {
                                 <div ref={messagesEndRef} />
                             </div>
 
-                            {/* {currentRoom?.status === 'ACTIVE' ? (
-                                <div style={styles.inputArea}>
-                                    <input
-                                        type="text"
-                                        value={inputText}
-                                        onChange={(e) => setInputText(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                        style={styles.input}
-                                        placeholder="메시지를 입력하세요..."
-                                    />
-                                    <button style={styles.sendButton} onClick={handleSendMessage}>전송</button>
-                                </div>
-                            ) : (
-                                <div style={styles.inputDisabledArea}>
-                                    종료된 상담에는 메시지를 보낼 수 없습니다.
-                                </div>
-                            )} */}
                             {currentRoom?.status === 'ACTIVE' && (
                                 <div style={styles.inputArea}>
                                     <input
@@ -577,7 +488,7 @@ const styles = {
     container: {
         display: 'flex',
         width: '100%',
-        overflow: 'hidden',
+        height: '70vh',
     },
     // 왼쪽 영역
     leftPane: {
@@ -585,7 +496,6 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        minHeight: '800px',
     },
     paneHeader: {
         padding: '15px 20px',
@@ -624,9 +534,8 @@ const styles = {
         flex: '1 1 0',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
         height: '100%',
-        minHeight: '800px',
+        overflow: 'hidden',
     },
     chatHeader: {
         height: '60px',
@@ -732,8 +641,6 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        overflow: 'hidden',
-        minHeight: '800px',
     },
     infoCard: {
         backgroundColor: '#fff',
