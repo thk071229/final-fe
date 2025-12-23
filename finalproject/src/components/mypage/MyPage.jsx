@@ -271,7 +271,7 @@ export default function MyPage() {
                                 { path: "/mypage/info", icon: FaUser, label: "내 정보" },
                                 { path: "/mypage/schedule", icon: AiOutlineSchedule, label: "내 일정" },
                                 { path: "/mypage/pay", icon: MdPayment, label: "결제 내역" },
-                                { path: "/mypage/wishlist", icon: FaHeart, label: "찜 목록" }
+                                // { path: "/mypage/wishlist", icon: FaHeart, label: "찜 목록" }
                             ].map((item) => {
                                 const isActive = activeTab === item.path;
                                 return (
@@ -335,7 +335,7 @@ export default function MyPage() {
                                 {activeTab.includes('info') && "내 프로필"}
                                 {activeTab.includes('schedule') && "나의 여행 일정"}
                                 {activeTab.includes('pay') && "결제 내역 확인"}
-                                {activeTab.includes('wishlist') && "내가 찜한 목록"}
+                                {/* {activeTab.includes('wishlist') && "내가 찜한 목록"} */}
                                 {activeTab === '/mypage' && "마이 페이지"}
                             </h2>
                         </div>

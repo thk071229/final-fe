@@ -257,6 +257,14 @@ export default function Menu() {
               </button>
 
               <div className="d-flex align-items-center ms-3" style={styles.divider}>
+                {isAdmin && (
+                  <Link 
+                  to="/admin"
+                  style={styles.logoutText}
+                      onMouseOver={(e) => { e.currentTarget.style.color = "#F3969A"; }}
+                      onMouseOut={(e) => { e.currentTarget.style.color = "#999"; }}
+                  >관리자페이지</Link>
+                )}
                 {isLogin === true ? (
                   <>
                     {/* ★ 로그인 상태 */}

@@ -4,6 +4,8 @@ import {
     FaEye, FaHeart, FaUser, FaGlobeAmericas, FaLock, FaTrash, FaSearch,
     FaChevronLeft, FaChevronRight
 } from "react-icons/fa";
+import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 export default function AdminSchedule() {
     // 1. 상태 관리
@@ -51,6 +53,28 @@ export default function AdminSchedule() {
             setLoading(false);
         }
     }, [currentPage, searchTerm, filterPublic]);
+
+    const deleteSchedule = useCallback(async (scheduleNo) => {
+        Swal.fire({
+            title: "일정을 삭제하시겠습니까?",
+            text: "삭제 후에는 복구가 불가능합니다.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "삭제",
+            cancelButtonText: "취소"
+        }).then(async (result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: "삭제 완료!",
+                    icon: "success"
+                });
+                await axios.delete(`/admin/schedule/delete/${scheduleNo}`)
+            }
+        });
+        setCurrentPage(1);
+    })
 
     useEffect(() => {
         loadSchedules();
@@ -186,14 +210,16 @@ export default function AdminSchedule() {
                                         </td>
                                         <td style={{ padding: "1.2rem 1rem", textAlign: "center" }}>
                                             <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
-                                                <button style={{
+                                                {/* <button style={{
                                                     border: `1px solid ${theme.primary}`, background: "white", color: theme.primary,
                                                     padding: "5px 10px", borderRadius: "6px", fontSize: "0.8rem", cursor: "pointer", fontWeight: "bold"
-                                                }}>상세</button>
+                                                }}>상세</button> */}
                                                 <button style={{
                                                     border: "none", background: "#fff0f0", color: "#ff4d4f",
                                                     padding: "5px 10px", borderRadius: "6px", fontSize: "0.8rem", cursor: "pointer"
-                                                }}><FaTrash size={12} /></button>
+                                                }}
+                                                onClick={() => {deleteSchedule(item.scheduleNo)}}
+                                                ><FaTrash size={12} /></button>
                                             </div>
                                         </td>
                                     </tr>

@@ -28,7 +28,7 @@ export default function AdminHome() {
         { name: "계정 상세검색", path: "/admin/search", icon: <FaUserShield /> },
         { name: "결제 현황", path: "/admin/payments", icon: <FaCreditCard /> },
         { name: "전체 일정 관리", path: "/admin/schedules", icon: <FaMapMarkedAlt /> },
-        { name: "상담사 관리", path: "/admin/counselors", icon: <FaHeadset /> },
+        // { name: "상담사 관리", path: "/admin/counselors", icon: <FaHeadset /> },
     ];
 
     return (
