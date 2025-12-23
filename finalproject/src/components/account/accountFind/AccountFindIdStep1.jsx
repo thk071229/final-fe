@@ -71,7 +71,7 @@ const AccountFindIdStep1 = ({ onNext }) => {
                 alert("휴대폰 번호를 정확히 입력해주세요.");
                 return;
             }
-            url = "http://192.168.20.16:8080/cert/sendPhoneForFind";
+            url = "/cert/sendPhoneForFind";
             params = { phone: cleanPhone };
         }
         // (2) 이메일 인증일 때
@@ -82,7 +82,7 @@ const AccountFindIdStep1 = ({ onNext }) => {
                 alert("이메일 형식을 정확히 입력해주세요.");
                 return;
             }
-            url = "http://192.168.20.16:8080/cert/sendEmailForFind";
+            url = "/cert/sendEmailForFind";
             params = { email: email };
         }
 
@@ -118,7 +118,7 @@ const AccountFindIdStep1 = ({ onNext }) => {
             const certTarget = contactType === "phone" ? phone.replace(/-/g, "") : email;
 
             // [1] 인증번호 확인 (await 적용)
-            const response = await axios.post("http://192.168.20.16:8080/cert/check", {
+            const response = await axios.post("/cert/check", {
                 certTarget: certTarget,
                 certNumber: certNumber
             });
@@ -136,7 +136,7 @@ const AccountFindIdStep1 = ({ onNext }) => {
 
                 try {
                     // [수정] await 적용 및 API 호출
-                    const idResponse = await axios.post("http://localhost:8080/account/findId", null, {
+                    const idResponse = await axios.post("/account/findId", null, {
                         params: idParams
                     });
 

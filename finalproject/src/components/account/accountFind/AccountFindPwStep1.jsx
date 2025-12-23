@@ -104,7 +104,7 @@ const AccountFindPwStep1 = ({ onNext }) => {
                 alert("휴대폰 번호를 정확히 입력해주세요.");
                 return;
             }
-            url = "http://localhost:8080/cert/sendPhoneForFindPw";
+            url = "/cert/sendPhoneForFindPw";
             params.phone = cleanPhone;
         }
         else {
@@ -114,7 +114,7 @@ const AccountFindPwStep1 = ({ onNext }) => {
                 alert("이메일 형식을 정확히 입력해주세요.");
                 return;
             }
-            url = "http://localhost:8080/cert/sendEmailForFindPw";
+            url = "/cert/sendEmailForFindPw";
             params.email = email;
         }
         try {
@@ -143,7 +143,7 @@ const AccountFindPwStep1 = ({ onNext }) => {
             const certTarget = contactType === "phone" ? phone.replace(/-/g, "") : email;
 
             // [1] 인증번호 확인 요청
-            const response = await axios.post("http://localhost:8080/cert/check", {
+            const response = await axios.post("/cert/check", {
                 certTarget: certTarget,
                 certNumber: certNumber
             });

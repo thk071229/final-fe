@@ -88,7 +88,7 @@ export default function MyPage() {
             setMyinfo(resp.data);
 
             if (resp.data.attachmentNo) {
-                setProfileUrl(`http://localhost:8080/attachment/download?attachmentNo=${resp.data.attachmentNo}`);
+                setProfileUrl(`/attachment/download?attachmentNo=${resp.data.attachmentNo}`);
             } else {
                 setProfileUrl("/images/default-profile.jpg");
             }

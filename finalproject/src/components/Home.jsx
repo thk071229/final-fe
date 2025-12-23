@@ -291,7 +291,7 @@ export default function Home() {
                                 : `#${selectedTag} 테마로 떠나는 여행 코스입니다.`}
                         </p>
                     </div>
-                    <Link to="/schedule/list" style={{ color: "#888", textDecoration: "none", fontSize: "0.9rem", fontWeight: "500" }}>
+                    <Link to="/scheduleList" style={{ color: "#888", textDecoration: "none", fontSize: "0.9rem", fontWeight: "500" }}>
                         전체보기 &gt;
                     </Link>
                 </div>
@@ -325,7 +325,7 @@ export default function Home() {
                                                 <img
                                                     src={
                                                         item.scheduleImage
-                                                            ? `http://localhost:8080/attachment/download/${item.scheduleImage}`
+                                                            ? `/attachment/download/${item.scheduleImage}`
                                                             : "/images/default-schedule.png"
                                                     }
                                                     onError={(e) => e.target.src = "/images/default-schedule.png"}
