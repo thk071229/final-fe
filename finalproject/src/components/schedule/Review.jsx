@@ -193,7 +193,7 @@ const canEdit = (reply) =>
                                                 className="reply-avatar-v3"
                                                 src={
                                                     (reply.attachmentNo ?? reply.attachments?.[0]?.attachmentNo)
-                                                        ? `http://localhost:8080/attachment/download?attachmentNo=${reply.attachmentNo ?? reply.attachments?.[0]?.attachmentNo}`
+                                                        ? `http://192.168.20.16:8080/attachment/download?attachmentNo=${reply.attachmentNo ?? reply.attachments?.[0]?.attachmentNo}`
                                                         : profileUrl
                                                 }
                                                 alt=""
