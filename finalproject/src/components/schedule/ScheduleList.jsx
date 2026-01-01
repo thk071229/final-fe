@@ -146,7 +146,7 @@ export default function ScheduleList() {
                     style={{ height: "100%", width: "100%", objectFit: "cover" }}
                     src={
                       item.scheduleImage
-                        ? `http://localhost:8080/attachment/download/${item.scheduleImage}`
+                        ? `http://192.168.20.16:8080/attachment/download/${item.scheduleImage}`
                         : "/images/default-schedule.png"
                     }
                     alt={item.scheduleName}

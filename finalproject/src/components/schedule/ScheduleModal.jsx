@@ -90,7 +90,7 @@ export default function ScheduleModal({ isOpen, onClose }) {
         }
 
         try {
-            await axios.post("http://localhost:8080/schedule/insert", formData);
+            await axios.post("/schedule/insert", formData);
             alert(`[${formData.get('scheduleName')}] 일정이 등록되었습니다!`);
             console.log("SAVE 데이터 =", formData);
             onClose();

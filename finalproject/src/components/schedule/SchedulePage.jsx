@@ -67,6 +67,7 @@ export default function SchedulePage() {
 
             toast.success("링크 복사 완료")
         } catch (error) {
+            console.log(error)
             toast.error('링크 생성 실패');
         }
 

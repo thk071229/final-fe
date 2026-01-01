@@ -172,7 +172,7 @@ const AccountJoinStep2 = ({ verifiedPhone }) => {
 
         if (accountValid === false) return;
         try {
-            await axios.post("http://localhost:8080/account/join", formData);
+            await axios.post("/account/join", formData);
             navigate("/account/joinFinish");
         } catch (e) {
             if (e.response && e.response.status === 409) {

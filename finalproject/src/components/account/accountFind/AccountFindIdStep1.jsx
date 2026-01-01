@@ -136,7 +136,7 @@ const AccountFindIdStep1 = ({ onNext }) => {
 
                 try {
                     // [수정] await 적용 및 API 호출
-                    const idResponse = await axios.post("http://localhost:8080/account/findId", null, {
+                    const idResponse = await axios.post("/account/findId", null, {
                         params: idParams
                     });
 
