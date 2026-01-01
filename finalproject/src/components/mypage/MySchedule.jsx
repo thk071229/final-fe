@@ -284,7 +284,9 @@ export default function MySchedule() {
 
                       className="w-100 border shadow-sm"
                       src={`http://localhost:8080/attachment/download/${s.scheduleImage}`} alt=""
-                    />
+                    onError={(e) => {
+                              "/images/default-schedule.png";
+                            }}/>
                   </div>
 
                   <div className="d-flex flex-column justify-content-center flex-grow-1">

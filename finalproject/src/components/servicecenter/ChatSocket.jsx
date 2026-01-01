@@ -89,7 +89,7 @@ export default function ChatSocket({ isChatOpen, onChatClose, currentChatNo }) {
 
     const checkParty = useCallback(async () => {
         try {
-            const { data } = await axios.post("http://192.168.20.16:8080/chat/check", { chatNo: chatNo });
+            const { data } = await axios.post("http://localhost:8080/chat/check", { chatNo: chatNo });
 
             if (data.result === false) {
                 setCheckComplete(false);
